@@ -1,0 +1,25 @@
+{
+  "full": {
+    "name": "Full Lab",
+    "description": "Show all infrastructure",
+    "include": ["*"]
+  },
+  "ceh": {
+    "name": "CEH Lab",
+    "description": "CEH practice network and resources",
+    "include": ["ceh-subnet"],
+    "expandChildren": true
+  },
+  "cloud": {
+    "name": "Cloud Services",
+    "description": "OCI cloud infrastructure",
+    "include": ["oci"],
+    "expandChildren": true
+  },
+  "proxmox": {
+    "name": "Proxmox Lab",
+    "description": "On-premises virtualization",
+    "include": ["proxmox"],
+    "expandChildren": true
+  }
+}
