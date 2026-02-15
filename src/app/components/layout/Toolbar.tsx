@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { 
   Save, 
   RotateCcw, 
@@ -14,7 +14,17 @@ import {
   Bell,
   ZoomIn,
   ZoomOut,
-  Maximize2
+  Maximize2,
+  Search,
+  X as XIcon,
+  Plus,
+  Download,
+  Upload,
+  Lock,
+  Unlock,
+  Database,
+  Image,
+  FileCode
 } from "lucide-react";
 import viewsData from "@/data/views.json";
 import { SavedLayout } from "@/lib/layoutStorage";
@@ -32,6 +42,15 @@ interface ToolbarProps {
   onZoomIn: () => void;
   onZoomOut: () => void;
   onFitView: () => void;
+  onSearch: (query: string) => void;
+  isAdmin: boolean;
+  onAdminLogin: () => void;
+  onAddNode: () => void;
+  onExportTopology: () => void;
+  onExportPNG: () => void;
+  onExportMermaid: () => void;
+  onImportTopology: () => void;
+  onSavePermanently: () => void;
 }
 
 export default function Toolbar({
@@ -42,16 +61,44 @@ export default function Toolbar({
   layoutMode,
   onLayoutModeChange,
   savedLayouts,
+  isAdmin,
+  onAdminLogin,
+  onAddNode,
+  onExportTopology,
+  onExportPNG,
+  onExportMermaid,
+  onImportTopology,
+  onSavePermanently,
   onLoadLayout,
   onDeleteLayout,
   onZoomIn,
   onZoomOut,
   onFitView,
+  onSearch,
 }: ToolbarProps) {
+  const [searchQuery, setSearchQuery] = useState("");
+
   const views = viewsData as Record<
     string,
     { name: string; description: string; include: string[] }
   >;
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      onSearch(searchQuery.trim());
+    }
+  };
+
+  const handleClearSearch = () => {
+    setSearchQuery("");
+  };
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Escape") {
+      handleClearSearch();
+    }
+  };
 
   const formatDate = (timestamp: number) => {
     const date = new Date(timestamp);
@@ -80,6 +127,152 @@ export default function Toolbar({
 
   return (
     <aside className="w-64 md:w-72 h-full border-r border-slate-800 p-3 md:p-4 flex flex-col gap-4 md:gap-6 backdrop-blur-xl bg-slate-950/60 z-20 overflow-y-auto">
+      {/* Search Section */}
+      <div className="space-y-2">
+        <span className="text-[10px] font-bold text-slate-400 uppercase px-2 tracking-wider">
+          Search
+        </span>
+        <form onSubmit={handleSearchSubmit} className="relative">
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={handleSearchKeyDown}
+            placeholder="Find node..."
+            className="
+              w-full px-3 py-2 pl-9 pr-9
+              bg-slate-800/50 border border-slate-700
+              rounded-lg text-sm text-slate-200
+              placeholder:text-slate-500
+              focus:outline-none focus:border-blue-500/50 focus:bg-slate-800/70
+              transition-all
+            "
+          />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={14} />
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={handleClearSearch}
+              className="
+                absolute right-2 top-1/2 -translate-y-1/2
+                p-1 rounded hover:bg-slate-700/50
+                text-slate-500 hover:text-slate-300
+                transition-all
+              "
+              aria-label="Clear search"
+            >
+              <XIcon size={14} />
+            </button>
+          )}
+        </form>
+      </div>
+
+      {/* Node Editor Section */}
+      <div className="space-y-2 pt-2 border-t border-slate-800">
+        <div className="flex items-center justify-between px-2">
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+            Node Editor
+          </span>
+          {isAdmin ? (
+            <div className="flex items-center gap-1">
+              <Unlock size={10} className="text-emerald-400" />
+              <span className="text-[9px] text-emerald-400 font-medium">Admin</span>
+            </div>
+          ) : (
+            <Lock size={10} className="text-slate-500" />
+          )}
+        </div>
+        
+        <div className="flex flex-col gap-1">
+          {/* Add Node Button */}
+          <button
+            onClick={onAddNode}
+            className="
+              flex items-center gap-2 md:gap-3 p-2 rounded-lg w-full transition-all
+              text-slate-400 hover:bg-blue-500/10 hover:text-blue-400
+            "
+          >
+            <Plus size={18} />
+            <span className="text-xs md:text-sm font-medium">Add Node</span>
+          </button>
+
+          {/* Import Topology */}
+          <button
+            onClick={onImportTopology}
+            className="
+              flex items-center gap-2 md:gap-3 p-2 rounded-lg w-full transition-all
+              text-slate-400 hover:bg-purple-500/10 hover:text-purple-400
+            "
+          >
+            <Upload size={18} />
+            <span className="text-xs md:text-sm font-medium">Import JSON</span>
+          </button>
+
+          {/* Export Topology */}
+          <button
+            onClick={onExportTopology}
+            className="
+              flex items-center gap-2 md:gap-3 p-2 rounded-lg w-full transition-all
+              text-slate-400 hover:bg-cyan-500/10 hover:text-cyan-400
+            "
+          >
+            <Download size={18} />
+            <span className="text-xs md:text-sm font-medium">Export JSON</span>
+          </button>
+
+          {/* Export PNG */}
+          <button
+            onClick={onExportPNG}
+            className="
+              flex items-center gap-2 md:gap-3 p-2 rounded-lg w-full transition-all
+              text-slate-400 hover:bg-pink-500/10 hover:text-pink-400
+            "
+          >
+            <Image size={18} />
+            <span className="text-xs md:text-sm font-medium">Export PNG</span>
+          </button>
+
+          {/* Export Mermaid */}
+          <button
+            onClick={onExportMermaid}
+            className="
+              flex items-center gap-2 md:gap-3 p-2 rounded-lg w-full transition-all
+              text-slate-400 hover:bg-indigo-500/10 hover:text-indigo-400
+            "
+          >
+            <FileCode size={18} />
+            <span className="text-xs md:text-sm font-medium">Export Mermaid</span>
+          </button>
+
+          {/* Save Permanently (Admin only) */}
+          {isAdmin ? (
+            <button
+              onClick={onSavePermanently}
+              className="
+                flex items-center gap-2 md:gap-3 p-2 rounded-lg w-full transition-all
+                bg-emerald-500/10 border border-emerald-500/20
+                text-emerald-400 hover:bg-emerald-500/20 hover:border-emerald-500/30
+              "
+            >
+              <Database size={18} />
+              <span className="text-xs md:text-sm font-medium">Save Permanently</span>
+            </button>
+          ) : (
+            <button
+              onClick={onAdminLogin}
+              className="
+                flex items-center gap-2 md:gap-3 p-2 rounded-lg w-full transition-all
+                text-slate-400 hover:bg-orange-500/10 hover:text-orange-400
+                border border-slate-700 hover:border-orange-500/30
+              "
+            >
+              <Lock size={18} />
+              <span className="text-xs md:text-sm font-medium">Admin Mode</span>
+            </button>
+          )}
+        </div>
+      </div>
+
       {/* Filters Section */}
       <div className="space-y-3 md:space-y-4">
         <div className="flex flex-col gap-1">

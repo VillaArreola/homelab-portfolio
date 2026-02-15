@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import ReactFlow, {
   Background,
   MiniMap,
@@ -10,6 +10,8 @@ import ReactFlow, {
   Edge,
   useReactFlow,
   ReactFlowProvider,
+  getNodesBounds,
+  getViewportForBounds,
 } from "reactflow";
 import "reactflow/dist/style.css";
 import { Menu, X } from "lucide-react";
@@ -18,10 +20,13 @@ import InfraNode from "./InfraNode";
 import NodePanel from "./NodePanel";
 import Legend from "./Legend";
 import Toolbar from "../layout/Toolbar";
+import AdminLoginModal from "../modals/AdminLoginModal";
+import NodeEditorModal from "../modals/NodeEditorModal";
 import infraData from "@/data/infrastructure.json";
 import viewsData from "@/data/views.json";
 import { buildInfraTree } from "@/lib/buildTree";
 import { treeToReactFlow } from "@/lib/treeToFlow";
+import { toMermaidDiagram } from "@/lib/mermaidExport";
 import { InfraItem } from "@/lib/infraTypes";
 import {
   saveLayout,
@@ -56,13 +61,28 @@ function DiagramContent() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
 
+  // Node Editor states
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [isAdminLoginOpen, setIsAdminLoginOpen] = useState(false);
+  const [isNodeEditorOpen, setIsNodeEditorOpen] = useState(false);
+  const [editorMode, setEditorMode] = useState<"add" | "edit">("add");
+  const [nodeToEdit, setNodeToEdit] = useState<InfraItem | undefined>(undefined);
+  const [currentTopology, setCurrentTopology] = useState<InfraItem[]>([...infraData]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Check admin status on mount
+  useEffect(() => {
+    const adminStatus = localStorage.getItem("isAdmin");
+    setIsAdmin(adminStatus === "true");
+  }, []);
+
   // Generar nodos y aristas iniciales desde el JSON
-  const tree = buildInfraTree(infraData);
+  const tree = buildInfraTree(currentTopology);
   const initialFlowData = treeToReactFlow(tree);
 
   // Mantener todos los nodos y edges originales
   const [allNodes, setAllNodes] = useState<Node[]>(initialFlowData.nodes);
-  const [allEdges] = useState<Edge[]>(initialFlowData.edges);
+  const [allEdges, setAllEdges] = useState<Edge[]>(initialFlowData.edges);
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialFlowData.nodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialFlowData.edges);
@@ -104,12 +124,12 @@ function DiagramContent() {
 
   // Manejar selección de nodo (abrir panel en móvil)
   const handleNodeClick = useCallback((_: any, node: Node) => {
-    const nodeData = infraData.find((item) => item.id === node.id);
+    const nodeData = currentTopology.find((item) => item.id === node.id);
     if (nodeData) {
       setSelected(nodeData);
       setIsPanelOpen(true);
     }
-  }, []);
+  }, [currentTopology]);
 
   const handleSave = useCallback(() => {
     const newLayout = saveLayout(nodes);
@@ -148,9 +168,12 @@ function DiagramContent() {
   const handleReset = useCallback(() => {
     clearAllLayouts();
     setSavedLayouts([]);
+    // Resetear topología a la original
+    setCurrentTopology([...infraData]);
     const tree = buildInfraTree(infraData);
     const flowData = treeToReactFlow(tree);
     setAllNodes(flowData.nodes);
+    setAllEdges(flowData.edges);
     setNodes(flowData.nodes);
     setEdges(flowData.edges);
     setActiveView("full");
@@ -174,9 +197,12 @@ function DiagramContent() {
       if (mode === "auto") {
         clearAllLayouts();
         setSavedLayouts([]);
+        // Resetear topología a la original
+        setCurrentTopology([...infraData]);
         const tree = buildInfraTree(infraData);
         const flowData = treeToReactFlow(tree);
         setAllNodes(flowData.nodes);
+        setAllEdges(flowData.edges);
         setNodes(flowData.nodes);
       }
     },
@@ -195,6 +221,244 @@ function DiagramContent() {
   const handleFitView = useCallback(() => {
     reactFlowInstance.fitView({ duration: 500, padding: 0.2 });
   }, [reactFlowInstance]);
+
+  // Búsqueda de nodos
+  const handleSearch = useCallback((query: string) => {
+    const lowerQuery = query.toLowerCase();
+    const foundNode = nodes.find(node => 
+      node.data.label?.toLowerCase().includes(lowerQuery) ||
+      node.id.toLowerCase().includes(lowerQuery)
+    );
+
+    if (foundNode) {
+      // Zoom hacia el nodo
+      reactFlowInstance.setCenter(foundNode.position.x + 100, foundNode.position.y + 50, {
+        zoom: 1.5,
+        duration: 800,
+      });
+
+      // Seleccionar el nodo en el panel
+      const nodeData = currentTopology.find((item) => item.id === foundNode.id);
+      if (nodeData) {
+        setSelected(nodeData);
+        setIsPanelOpen(true);
+      }
+    }
+  }, [nodes, reactFlowInstance, currentTopology]);
+
+  // ===== NODE EDITOR FUNCTIONS =====
+  
+  // Admin login
+  const handleAdminLogin = useCallback(() => {
+    setIsAdminLoginOpen(true);
+  }, []);
+
+  const handleAdminLoginSuccess = useCallback(() => {
+    setIsAdmin(true);
+    setIsAdminLoginOpen(false);
+    setSaveMessage("✓ Admin mode activated");
+    setTimeout(() => setSaveMessage(""), 2000);
+  }, []);
+
+  // Add node
+  const handleAddNode = useCallback(() => {
+    setEditorMode("add");
+    setNodeToEdit(undefined);
+    setIsNodeEditorOpen(true);
+  }, []);
+
+  // Edit node (from panel)
+  const handleEditNode = useCallback((node: InfraItem) => {
+    setEditorMode("edit");
+    setNodeToEdit(node);
+    setIsNodeEditorOpen(true);
+  }, []);
+
+  // Save node (add or edit)
+  const handleSaveNode = useCallback((node: InfraItem) => {
+    setCurrentTopology(prev => {
+      if (editorMode === "add") {
+        // Add new node
+        return [...prev, node];
+      } else {
+        // Edit existing node
+        return prev.map(n => n.id === node.id ? node : n);
+      }
+    });
+    setSaveMessage(`✓ Node ${editorMode === "add" ? "added" : "updated"}`);
+    setTimeout(() => setSaveMessage(""), 2000);
+  }, [editorMode]);
+
+  // Delete node
+  const handleDeleteNode = useCallback((nodeId: string) => {
+    if (!confirm("Are you sure you want to delete this node?")) return;
+    
+    setCurrentTopology(prev => prev.filter(n => n.id !== nodeId));
+    setSelected(null);
+    setIsPanelOpen(false);
+    setSaveMessage("✓ Node deleted");
+    setTimeout(() => setSaveMessage(""), 2000);
+  }, []);
+
+  // Export topology as JSON
+  const handleExportTopology = useCallback(() => {
+    const dataStr = JSON.stringify(currentTopology, null, 2);
+    const dataBlob = new Blob([dataStr], { type: "application/json" });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `infrastructure-${Date.now()}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+    setSaveMessage("✓ Topology exported");
+    setTimeout(() => setSaveMessage(""), 2000);
+  }, [currentTopology]);
+
+  // Export as PNG image
+  const handleExportPNG = useCallback(() => {
+    const nodesBounds = getNodesBounds(nodes);
+    const viewport = getViewportForBounds(
+      nodesBounds,
+      nodesBounds.width,
+      nodesBounds.height,
+      0.5,
+      2,
+      0.2
+    );
+
+    // Get the React Flow element
+    const rfElement = document.querySelector('.react-flow') as HTMLElement;
+    if (!rfElement) return;
+
+    // Create canvas
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const scale = 2; // Higher quality
+    canvas.width = (nodesBounds.width + 200) * scale;
+    canvas.height = (nodesBounds.height + 200) * scale;
+
+    ctx.scale(scale, scale);
+    ctx.fillStyle = '#020617'; // slate-950 background
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Use html2canvas alternative: take screenshot via foreignObject
+    import('html-to-image').then(({ toPng }) => {
+      toPng(rfElement, {
+        backgroundColor: '#020617',
+        width: nodesBounds.width + 200,
+        height: nodesBounds.height + 200,
+        style: {
+          transform: `translate(${-nodesBounds.x + 100}px, ${-nodesBounds.y + 100}px) scale(${viewport.zoom})`,
+        },
+      })
+        .then((dataUrl) => {
+          const link = document.createElement('a');
+          link.download = `infrastructure-diagram-${Date.now()}.png`;
+          link.href = dataUrl;
+          link.click();
+          setSaveMessage("✓ PNG exported");
+          setTimeout(() => setSaveMessage(""), 2000);
+        })
+        .catch((error) => {
+          console.error('Export PNG error:', error);
+          setSaveMessage("❌ PNG export failed");
+          setTimeout(() => setSaveMessage(""), 2000);
+        });
+    });
+  }, [nodes]);
+
+  // Export as Mermaid diagram
+  const handleExportMermaid = useCallback(() => {
+    const mermaidCode = toMermaidDiagram(currentTopology);
+    const dataBlob = new Blob([mermaidCode], { type: "text/plain" });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `infrastructure-diagram-${Date.now()}.mmd`;
+    link.click();
+    URL.revokeObjectURL(url);
+    setSaveMessage("✓ Mermaid exported");
+    setTimeout(() => setSaveMessage(""), 2000);
+  }, [currentTopology]);
+
+  // Import topology from JSON
+  const handleImportTopology = useCallback(() => {
+    fileInputRef.current?.click();
+  }, []);
+
+  const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const json = JSON.parse(event.target?.result as string);
+        if (Array.isArray(json)) {
+          setCurrentTopology(json);
+          setSaveMessage("✓ Topology imported");
+          setTimeout(() => setSaveMessage(""), 2000);
+        } else {
+          alert("Invalid JSON format: must be an array");
+        }
+      } catch (error) {
+        alert("Error parsing JSON file");
+      }
+    };
+    reader.readAsText(file);
+    
+    // Reset input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  }, []);
+
+  // Save permanently (admin only)
+  const handleSavePermanently = useCallback(async () => {
+    if (!isAdmin) {
+      alert("Admin privileges required");
+      return;
+    }
+
+    const password = process.env.NEXT_PUBLIC_ADMIN_PASSWORD;
+    
+    try {
+      const response = await fetch("/api/save-infrastructure", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          topology: currentTopology,
+          password: password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setSaveMessage(`✓ Saved ${data.nodesCount} nodes permanently`);
+        setTimeout(() => setSaveMessage(""), 3000);
+      } else {
+        alert(`Error: ${data.error}`);
+      }
+    } catch (error) {
+      alert("Failed to save topology");
+      console.error(error);
+    }
+  }, [isAdmin, currentTopology]);
+
+  // Update the tree when topology changes
+  useEffect(() => {
+    const tree = buildInfraTree(currentTopology);
+    const flowData = treeToReactFlow(tree);
+    setAllNodes(flowData.nodes);
+    setAllEdges(flowData.edges);
+    setNodes(flowData.nodes);
+    setEdges(flowData.edges);
+  }, [currentTopology, setNodes, setEdges]);
 
   return (
     <div className="h-full flex bg-slate-950">
@@ -236,6 +500,15 @@ function DiagramContent() {
           onZoomIn={handleZoomIn}
           onZoomOut={handleZoomOut}
           onFitView={handleFitView}
+          onSearch={handleSearch}
+          isAdmin={isAdmin}
+          onAdminLogin={handleAdminLogin}
+          onAddNode={handleAddNode}
+          onExportTopology={handleExportTopology}
+          onExportPNG={handleExportPNG}
+          onExportMermaid={handleExportMermaid}
+          onImportTopology={handleImportTopology}
+          onSavePermanently={handleSavePermanently}
         />
       </div>
 
@@ -303,10 +576,38 @@ function DiagramContent() {
                 setSelected(null);
                 setIsPanelOpen(false);
               }}
+              onEdit={handleEditNode}
+              onDelete={handleDeleteNode}
             />
           </div>
         </>
       )}
+
+      {/* Hidden file input for import */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".json"
+        onChange={handleFileChange}
+        className="hidden"
+      />
+
+      {/* Admin Login Modal */}
+      <AdminLoginModal
+        isOpen={isAdminLoginOpen}
+        onClose={() => setIsAdminLoginOpen(false)}
+        onSuccess={handleAdminLoginSuccess}
+      />
+
+      {/* Node Editor Modal */}
+      <NodeEditorModal
+        isOpen={isNodeEditorOpen}
+        mode={editorMode}
+        node={nodeToEdit}
+        allNodes={currentTopology}
+        onClose={() => setIsNodeEditorOpen(false)}
+        onSave={handleSaveNode}
+      />
     </div>
   );
 }

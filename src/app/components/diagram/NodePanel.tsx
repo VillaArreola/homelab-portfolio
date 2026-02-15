@@ -1,14 +1,16 @@
 "use client";
 
 import { InfraItem } from "@/lib/infraTypes";
-import { Server, Layers, Network, GitBranch, Package, X, Globe, ExternalLink } from "lucide-react";
+import { Server, Layers, Network, GitBranch, Package, X, Globe, ExternalLink, Edit2, Trash2 } from "lucide-react";
 
 type Props = {
   node: InfraItem | null;
   onClose?: () => void;
+  onEdit?: (node: InfraItem) => void;
+  onDelete?: (nodeId: string) => void;
 };
 
-export default function NodePanel({ node, onClose }: Props) {
+export default function NodePanel({ node, onClose, onEdit, onDelete }: Props) {
   if (!node) return null;
 
   // Badge color based on layer
@@ -61,6 +63,40 @@ export default function NodePanel({ node, onClose }: Props) {
 
       {/* ===== CONTENT ===== */}
       <div className="p-4 md:p-6 space-y-5">
+        {/* Edit/Delete Actions (if handlers provided) */}
+        {(onEdit || onDelete) && (
+          <div className="flex gap-2 pb-3 border-b border-slate-800">
+            {onEdit && (
+              <button
+                onClick={() => onEdit(node)}
+                className="
+                  flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg
+                  bg-purple-500/10 border border-purple-500/20
+                  text-purple-400 hover:bg-purple-500/20 hover:border-purple-500/30
+                  transition-all text-sm font-medium
+                "
+              >
+                <Edit2 size={16} />
+                <span>Edit</span>
+              </button>
+            )}
+            {onDelete && (
+              <button
+                onClick={() => onDelete(node.id)}
+                className="
+                  flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg
+                  bg-red-500/10 border border-red-500/20
+                  text-red-400 hover:bg-red-500/20 hover:border-red-500/30
+                  transition-all text-sm font-medium
+                "
+              >
+                <Trash2 size={16} />
+                <span>Delete</span>
+              </button>
+            )}
+          </div>
+        )}
+
         {/* ===== TYPE ===== */}
         <section>
           <div className="flex items-center gap-2 mb-2">
