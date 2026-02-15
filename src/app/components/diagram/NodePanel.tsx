@@ -1,13 +1,14 @@
 "use client";
 
 import { InfraItem } from "@/lib/infraTypes";
-import { Server, Layers, Network, GitBranch, Package } from "lucide-react";
+import { Server, Layers, Network, GitBranch, Package, X } from "lucide-react";
 
 type Props = {
   node: InfraItem | null;
+  onClose?: () => void;
 };
 
-export default function NodePanel({ node }: Props) {
+export default function NodePanel({ node, onClose }: Props) {
   if (!node) return null;
 
   // Badge color based on layer
@@ -21,22 +22,32 @@ export default function NodePanel({ node }: Props) {
   };
 
   return (
-    <aside className="w-[340px] h-full backdrop-blur-xl bg-slate-900/70 border-l border-slate-800 overflow-y-auto">
+    <aside className="w-full md:w-[340px] h-full backdrop-blur-xl bg-slate-900/70 border-l border-slate-800 overflow-y-auto">
       {/* ===== HEADER ===== */}
-      <div className="p-6 border-b border-slate-800">
+      <div className="p-4 md:p-6 border-b border-slate-800">
         <div className="flex items-start gap-3">
           <div className="p-2 rounded-lg bg-blue-500/10 border border-blue-500/20">
             <Server className="w-5 h-5 text-blue-400" strokeWidth={2} />
           </div>
-          <div className="flex-1">
-            <h2 className="text-lg font-semibold text-slate-100">{node.name}</h2>
+          <div className="flex-1 min-w-0">
+            <h2 className="text-base md:text-lg font-semibold text-slate-100 truncate">{node.name}</h2>
             <p className="text-xs text-slate-400 mt-1">Infrastructure Node</p>
           </div>
+          {/* Bot\u00f3n cerrar para m\u00f3viles */}
+          {onClose && (
+            <button
+              onClick={onClose}
+              className="md:hidden p-2 rounded-lg hover:bg-slate-800 transition-colors text-slate-400"
+              aria-label="Close panel"
+            >
+              <X size={20} />
+            </button>
+          )}
         </div>
       </div>
 
       {/* ===== CONTENT ===== */}
-      <div className="p-6 space-y-5">
+      <div className="p-4 md:p-6 space-y-5">
         {/* ===== TYPE ===== */}
         <section>
           <div className="flex items-center gap-2 mb-2">

@@ -79,9 +79,9 @@ export default function Toolbar({
   };
 
   return (
-    <aside className="w-64 border-r border-slate-800 p-4 flex flex-col gap-6 backdrop-blur-xl bg-slate-950/60 z-20">
+    <aside className="w-64 md:w-72 h-full border-r border-slate-800 p-3 md:p-4 flex flex-col gap-4 md:gap-6 backdrop-blur-xl bg-slate-950/60 z-20 overflow-y-auto">
       {/* Filters Section */}
-      <div className="space-y-4">
+      <div className="space-y-3 md:space-y-4">
         <div className="flex flex-col gap-1">
           <span className="text-[10px] font-bold text-slate-400 uppercase px-2 tracking-wider">
             Filters
@@ -91,7 +91,7 @@ export default function Toolbar({
               key={id}
               onClick={() => onViewChange(id)}
               className={`
-                flex items-center gap-3 p-2 rounded-lg w-full transition-all
+                flex items-center gap-2 md:gap-3 p-2 rounded-lg w-full transition-all text-left
                 ${
                   activeView === id
                     ? "bg-blue-500/10 text-blue-400"
@@ -101,41 +101,41 @@ export default function Toolbar({
               title={config.description}
             >
               {getViewIcon(id)}
-              <span className="text-sm font-medium">{config.name}</span>
+              <span className="text-xs md:text-sm font-medium truncate">{config.name}</span>
             </button>
           ))}
         </div>
 
         {/* Layout Actions */}
-        <div className="pt-4 flex flex-col gap-1">
+        <div className="pt-2 md:pt-4 flex flex-col gap-1">
           <span className="text-[10px] font-bold text-slate-400 uppercase px-2 tracking-wider">
             Layout
           </span>
           <button
             onClick={onSave}
             className="
-              flex items-center gap-3 p-2 rounded-lg w-full transition-all
+              flex items-center gap-2 md:gap-3 p-2 rounded-lg w-full transition-all
               text-slate-400 hover:bg-emerald-500/10 hover:text-emerald-400
             "
           >
-            <Save size={20} />
-            <span className="text-sm font-medium">Save Layout</span>
+            <Save size={18} />
+            <span className="text-xs md:text-sm font-medium">Save Layout</span>
           </button>
           <button
             onClick={onReset}
             className="
-              flex items-center gap-3 p-2 rounded-lg w-full transition-all
+              flex items-center gap-2 md:gap-3 p-2 rounded-lg w-full transition-all
               text-slate-400 hover:bg-orange-500/10 hover:text-orange-400
             "
           >
-            <RotateCcw size={20} />
-            <span className="text-sm font-medium">Reset All</span>
+            <RotateCcw size={18} />
+            <span className="text-xs md:text-sm font-medium">Reset All</span>
           </button>
         </div>
 
-        {/* Saved Layouts */}
+        {/* Saved Layouts - Ocultar en m\u00f3viles */}
         {savedLayouts.length > 0 && (
-          <div className="pt-4 flex flex-col gap-2">
+          <div className="hidden md:flex pt-4 flex-col gap-2">
             <div className="flex items-center justify-between px-2">
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                 Saved Layouts
@@ -183,8 +183,8 @@ export default function Toolbar({
           </div>
         )}
 
-        {/* Quick Stats */}
-        <div className="pt-4 flex flex-col gap-2">
+        {/* Quick Stats - Ocultar en móviles */}
+        <div className="hidden lg:flex pt-4 flex-col gap-2">
           <span className="text-[10px] font-bold text-slate-400 uppercase px-2 tracking-wider">
             Quick Stats
           </span>
@@ -209,7 +209,7 @@ export default function Toolbar({
       </div>
 
       {/* Zoom Controls */}
-      <div className="mt-auto pt-4 border-t border-slate-800 space-y-2">
+      <div className="mt-auto pt-3 md:pt-4 border-t border-slate-800 space-y-2">
         <span className="text-[10px] font-bold text-slate-400 uppercase px-2 tracking-wider">
           View Controls
         </span>
@@ -223,6 +223,7 @@ export default function Toolbar({
               transition-all
             "
             title="Zoom Out"
+            aria-label="Zoom Out"
           >
             <ZoomOut size={16} />
           </button>
@@ -235,6 +236,7 @@ export default function Toolbar({
               transition-all
             "
             title="Fit View"
+            aria-label="Fit View"
           >
             <Maximize2 size={16} />
           </button>
@@ -247,14 +249,15 @@ export default function Toolbar({
               transition-all
             "
             title="Zoom In"
+            aria-label="Zoom In"
           >
             <ZoomIn size={16} />
           </button>
         </div>
       </div>
 
-      {/* Layout Mode Toggle */}
-      <div className="space-y-2 pt-4">
+      {/* Layout Mode Toggle - Ocultar en móviles */}
+      <div className="hidden md:block space-y-2 pt-3 md:pt-4">
         <span className="text-[10px] font-bold text-slate-400 uppercase px-2 tracking-wider">
           Mode
         </span>

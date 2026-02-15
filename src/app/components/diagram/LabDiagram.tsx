@@ -12,6 +12,7 @@ import ReactFlow, {
   ReactFlowProvider,
 } from "reactflow";
 import "reactflow/dist/style.css";
+import { Menu, X } from "lucide-react";
 
 import InfraNode from "./InfraNode";
 import NodePanel from "./NodePanel";
@@ -52,6 +53,8 @@ function DiagramContent() {
   const [layoutMode, setLayoutMode] = useState<"auto" | "manual">("manual");
   const [saveMessage, setSaveMessage] = useState<string>("");
   const [savedLayouts, setSavedLayouts] = useState<SavedLayout[]>([]);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isPanelOpen, setIsPanelOpen] = useState(false);
 
   // Generar nodos y aristas iniciales desde el JSON
   const tree = buildInfraTree(infraData);
@@ -96,6 +99,18 @@ function DiagramContent() {
   }, [activeView, allNodes, allEdges, setNodes, setEdges]);
 
   // Guardar layout
+  // Toggle sidebar en móviles
+  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
+
+  // Manejar selección de nodo (abrir panel en móvil)
+  const handleNodeClick = useCallback((_: any, node: Node) => {
+    const nodeData = infraData.find((item) => item.id === node.id);
+    if (nodeData) {
+      setSelected(nodeData);
+      setIsPanelOpen(true);
+    }
+  }, []);
+
   const handleSave = useCallback(() => {
     const newLayout = saveLayout(nodes);
     const layouts = getSavedLayouts();
@@ -183,21 +198,46 @@ function DiagramContent() {
 
   return (
     <div className="h-full flex bg-slate-950">
+      {/* Bot\u00f3n hamburger para m\u00f3viles */}
+      <button
+        onClick={toggleSidebar}
+        className="lg:hidden fixed top-20 left-4 z-50 p-2 rounded-lg backdrop-blur-xl bg-slate-900/70 border border-slate-800 text-slate-300 hover:text-blue-400 transition-colors"
+        aria-label="Toggle menu"
+      >
+        {isSidebarOpen ? <X size={20} /> : <Menu size={20} />}
+      </button>
+
+      {/* Overlay para cerrar sidebar en m\u00f3viles */}
+      {isSidebarOpen && (
+        <div
+          className="lg:hidden fixed inset-0 bg-black/50 z-30"
+          onClick={toggleSidebar}
+        />
+      )}
+
       {/* Sidebar/Toolbar */}
-      <Toolbar
-        activeView={activeView}
-        onViewChange={handleViewChange}
-        onSave={handleSave}
-        onReset={handleReset}
-        layoutMode={layoutMode}
-        onLayoutModeChange={handleLayoutModeChange}
-        savedLayouts={savedLayouts}
-        onLoadLayout={handleLoadLayout}
-        onDeleteLayout={handleDeleteLayout}
-        onZoomIn={handleZoomIn}
-        onZoomOut={handleZoomOut}
-        onFitView={handleFitView}
-      />
+      <div className={`
+        fixed lg:relative
+        inset-y-0 left-0
+        z-40 lg:z-auto
+        transform lg:transform-none transition-transform duration-300
+        ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+      `}>
+        <Toolbar
+          activeView={activeView}
+          onViewChange={handleViewChange}
+          onSave={handleSave}
+          onReset={handleReset}
+          layoutMode={layoutMode}
+          onLayoutModeChange={handleLayoutModeChange}
+          savedLayouts={savedLayouts}
+          onLoadLayout={handleLoadLayout}
+          onDeleteLayout={handleDeleteLayout}
+          onZoomIn={handleZoomIn}
+          onZoomOut={handleZoomOut}
+          onFitView={handleFitView}
+        />
+      </div>
 
       {/* ===== DIAGRAM AREA ===== */}
       <div className="flex-1 relative bg-slate-950">
@@ -208,10 +248,7 @@ function DiagramContent() {
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           nodesDraggable={layoutMode === "manual"}
-          onNodeClick={(_, node) => {
-            const nodeData = infraData.find((item) => item.id === node.id);
-            if (nodeData) setSelected(nodeData);
-          }}
+          onNodeClick={handleNodeClick}
           fitView
         >
           <MiniMap 
@@ -222,6 +259,7 @@ function DiagramContent() {
             style={{
               borderRadius: '1rem',
             }}
+            className="hidden md:block"
           />
           <Background 
             gap={24}
@@ -241,7 +279,34 @@ function DiagramContent() {
       </div>
 
       {/* ===== SIDE PANEL ===== */}
-      <NodePanel node={selected} />
+      {/* Panel modal en móviles, fixed en desktop */}
+      {selected && (
+        <>
+          {/* Overlay para cerrar panel en móviles */}
+          {isPanelOpen && (
+            <div
+              className="md:hidden fixed inset-0 bg-black/50 z-40"
+              onClick={() => setIsPanelOpen(false)}
+            />
+          )}
+          
+          <div className={`
+            fixed md:relative
+            inset-y-0 right-0
+            z-50 md:z-auto
+            transform md:transform-none transition-transform duration-300
+            ${isPanelOpen ? 'translate-x-0' : 'translate-x-full md:translate-x-0'}
+          `}>
+            <NodePanel 
+              node={selected} 
+              onClose={() => {
+                setSelected(null);
+                setIsPanelOpen(false);
+              }}
+            />
+          </div>
+        </>
+      )}
     </div>
   );
 }
