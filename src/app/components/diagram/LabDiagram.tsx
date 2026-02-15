@@ -15,11 +15,11 @@ import "reactflow/dist/style.css";
 import InfraNode from "./InfraNode";
 import NodePanel from "./NodePanel";
 import Legend from "./Legend";
-import { labNodes } from "@/data/labData";
 import { RotateCcw } from "lucide-react";
 import infraData from "@/data/infrastructure.json";
 import { buildInfraTree } from "@/lib/buildTree";
 import { treeToReactFlow } from "@/lib/treeToFlow";
+import { InfraItem } from "@/lib/infraTypes";
 
 type NodeData = {
   label: string;
@@ -33,7 +33,7 @@ const nodeTypes = {
 };
 
 export default function LabDiagram() {
-  const [selected, setSelected] = useState<any>(null);
+  const [selected, setSelected] = useState<InfraItem | null>(null);
 
   // Generar nodos y aristas desde el JSON
   const tree = buildInfraTree(infraData);
@@ -60,8 +60,8 @@ export default function LabDiagram() {
           onEdgesChange={onEdgesChange}
           nodesDraggable={true}
           onNodeClick={(_, node) => {
-            const data = labNodes[node.id];
-            if (data) setSelected(data);
+            const nodeData = infraData.find((item) => item.id === node.id);
+            if (nodeData) setSelected(nodeData);
           }}
           fitView
         >

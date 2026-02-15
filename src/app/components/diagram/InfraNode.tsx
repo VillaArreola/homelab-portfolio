@@ -6,20 +6,30 @@ type Props = {
     role?: string;
     color?: string;
     icon?: React.ReactNode;
+    status?: "up" | "down" | "unknown";
   };
 };
 
+// ================================
+// ESTILOS DE STATUS
+// ================================
+const statusStyles = {
+  up: "bg-emerald-500 shadow-lg shadow-emerald-500/50",
+  down: "bg-gray-500",
+  unknown: "bg-yellow-400",
+};
+
 export default function InfraNode({ data }: Props) {
+  const status = data.status || "unknown";
+  
   return (
     <div
-      className="
-        rounded-lg
-        border
-        shadow-lg
-        text-sm
-        transition
+      className={`
+        relative
+        rounded-lg border shadow-lg text-sm transition
         hover:border-slate-300
-      "
+        ${status === "down" ? "opacity-40 grayscale" : ""}
+      `}
       style={{
         background: data.color ?? "#0f172a",
         borderColor: "#334155",
@@ -54,6 +64,16 @@ export default function InfraNode({ data }: Props) {
           )}
         </div>
       </div>
+
+      {/* ===== STATUS INDICATOR ===== */}
+      <div
+        className={`
+          absolute -top-1 -right-1
+          w-3 h-3 rounded-full
+          ${statusStyles[status]}
+        `}
+        title={`Status: ${status}`}
+      />
 
       {/* ===== CONNECTION POINTS ===== */}
       <Handle

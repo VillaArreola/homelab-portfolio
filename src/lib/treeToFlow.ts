@@ -1,4 +1,6 @@
 import { InfraTreeNode } from "@/lib/infraTypes";
+import statusMap from "@/data/status.json";
+
 import {
   Cloud,
   Server,
@@ -44,6 +46,16 @@ function getIcon(type: string) {
 }
 
 // ================================
+// Helper de estado para nodos
+function getStatus(id: string): "up" | "down" | "unknown" {
+  const status = statusMap[id as keyof typeof statusMap];
+  if (status === "up" || status === "down") {
+    return status;
+  }
+  return "unknown";
+}
+
+// ================================
 // LAYOUT AUTOMÁTICO CENTRADO
 // ================================
 export function treeToReactFlow(roots: InfraTreeNode[]) {
@@ -71,6 +83,7 @@ export function treeToReactFlow(roots: InfraTreeNode[]) {
           role: node.purpose,
           color: typeColors[node.type] || "#374151",
           icon: getIcon(node.type),
+          status: getStatus(node.id),
         },
       });
 
@@ -104,6 +117,7 @@ export function treeToReactFlow(roots: InfraTreeNode[]) {
         role: node.purpose,
         color: typeColors[node.type] || "#374151",
         icon: getIcon(node.type),
+        status: getStatus(node.id),
       },
     });
 

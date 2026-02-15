@@ -1,17 +1,9 @@
 "use client";
 
-type NodeData = {
-  title: string;
-  role?: string;
-  cpu?: string;
-  ram?: string;
-  os?: string;
-  network?: string;
-  services?: string[];
-};
+import { InfraItem } from "@/lib/infraTypes";
 
 type Props = {
-  node: NodeData | null;
+  node: InfraItem | null;
 };
 
 export default function NodePanel({ node }: Props) {
@@ -20,28 +12,34 @@ export default function NodePanel({ node }: Props) {
   return (
     <aside className="w-[320px] h-full bg-neutral-900 border-l border-neutral-700 p-4 text-white overflow-y-auto">
       {/* ===== TITLE ===== */}
-      <h2 className="text-xl font-bold">{node.title}</h2>
+      <h2 className="text-xl font-bold">{node.name}</h2>
 
       <div className="mt-6 space-y-6 text-sm text-neutral-300">
-        {/* ===== OVERVIEW ===== */}
-        {node.role && (
+        {/* ===== TYPE ===== */}
+        <section>
+          <h3 className="text-xs uppercase tracking-wide text-neutral-400">
+            Type
+          </h3>
+          <p className="mt-1">{node.type}</p>
+        </section>
+
+        {/* ===== PURPOSE ===== */}
+        {node.purpose && (
           <section>
             <h3 className="text-xs uppercase tracking-wide text-neutral-400">
-              Overview
+              Purpose
             </h3>
-            <p className="mt-1">{node.role}</p>
+            <p className="mt-1">{node.purpose}</p>
           </section>
         )}
 
-        {/* ===== RESOURCES ===== */}
-        {(node.cpu || node.ram || node.os) && (
+        {/* ===== LAYER ===== */}
+        {node.layer && (
           <section>
             <h3 className="text-xs uppercase tracking-wide text-neutral-400">
-              Resources
+              Layer
             </h3>
-            {node.cpu && <p>CPU: {node.cpu}</p>}
-            {node.ram && <p>RAM: {node.ram}</p>}
-            {node.os && <p>OS: {node.os}</p>}
+            <p className="mt-1 capitalize">{node.layer}</p>
           </section>
         )}
 
@@ -51,21 +49,17 @@ export default function NodePanel({ node }: Props) {
             <h3 className="text-xs uppercase tracking-wide text-neutral-400">
               Network
             </h3>
-            <p>{node.network}</p>
+            <p className="mt-1">{node.network}</p>
           </section>
         )}
 
-        {/* ===== SERVICES ===== */}
-        {node.services && node.services.length > 0 && (
+        {/* ===== PARENT ===== */}
+        {node.parent && (
           <section>
             <h3 className="text-xs uppercase tracking-wide text-neutral-400">
-              Services
+              Parent Node
             </h3>
-            <ul className="list-disc ml-4 mt-1 space-y-1">
-              {node.services.map((service) => (
-                <li key={service}>{service}</li>
-              ))}
-            </ul>
+            <p className="mt-1 capitalize">{node.parent}</p>
           </section>
         )}
       </div>
