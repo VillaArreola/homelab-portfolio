@@ -7,6 +7,9 @@ type Props = {
     color?: string;
     icon?: React.ReactNode;
     status?: "up" | "down" | "unknown" | "off";
+    ip?: string;
+    dns?: string;
+    port?: string | number;
   };
 };
 
@@ -35,6 +38,19 @@ export default function InfraNode({ data }: Props) {
   // Determinar si debe mostrar mensaje de alerta
   const showAlert = status === "down";
   const alertMessage = data.label.includes("Proxmox") ? "Check Storage" : "Attention Required";
+  
+  // Generar texto de acceso (IP/DNS + puerto)
+  const getAccessText = () => {
+    const host = data.dns || data.ip;
+    if (!host) return null;
+    
+    if (data.port) {
+      return `${host}:${data.port}`;
+    }
+    return host;
+  };
+  
+  const accessText = getAccessText();
   
   return (
     <div
@@ -82,11 +98,20 @@ export default function InfraNode({ data }: Props) {
             <div className="text-[10px] text-red-400 leading-snug mt-0.5 font-medium">
               {alertMessage}
             </div>
-          ) : data.role ? (
-            <div className="text-[10px] text-slate-400 leading-snug mt-0.5">
-              {data.role}
-            </div>
-          ) : null}
+          ) : (
+            <>
+              {data.role && (
+                <div className="text-[10px] text-slate-400 leading-snug mt-0.5">
+                  {data.role}
+                </div>
+              )}
+              {accessText && (
+                <div className="text-[9px] text-blue-400 leading-snug mt-0.5 font-mono">
+                  {accessText}
+                </div>
+              )}
+            </>
+          )}
         </div>
       </div>
 

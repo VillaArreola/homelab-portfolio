@@ -35,7 +35,10 @@
     "layer": "virtual",
     "runtime": "bare-metal",
     "network": "10.10.10.0/24",
-    "purpose": "Main on-prem hypervisor"
+    "purpose": "Main on-prem hypervisor",
+    "ip": "10.10.10.53",
+    "port": 8006,
+    "url": "https://10.10.10.53:8006"
   },
 
   {
@@ -45,7 +48,10 @@
     "parent": "proxmox",
     "layer": "virtual",
     "network": "10.10.10.1",
-    "purpose": "Firewall and network segmentation"
+    "purpose": "Firewall and network segmentation",
+    "ip": "10.10.10.1",
+    "port": 443,
+    "url": "https://10.10.10.1"
   },
 
   {
@@ -90,7 +96,9 @@
     "type": "cloud-host",
     "layer": "cloud",
     "network": "10.0.0.0/16",
-    "purpose": "Public services and external access"
+    "purpose": "Public services and external access",
+    "dns": "hub.villaarreola.com",
+    "url": "https://hub.villaarreola.com"
   },
 
   {
@@ -109,7 +117,10 @@
     "type": "service",
     "parent": "docker-oci",
     "layer": "cloud",
-    "purpose": "Reverse proxy and SSL"
+    "purpose": "Reverse proxy and SSL",
+    "dns": "npm.villaarreola.com",
+    "port": 81,
+    "url": "https://npm.villaarreola.com:81"
   },
 
   {
@@ -118,7 +129,9 @@
     "type": "service",
     "parent": "docker-oci",
     "layer": "cloud",
-    "purpose": "Automation workflows"
+    "purpose": "Automation workflows",
+    "dns": "n8n.villaarreola.com",
+    "url": "https://n8n.villaarreola.com"
   },
 
   {
@@ -127,7 +140,10 @@
     "type": "service",
     "parent": "docker-oci",
     "layer": "cloud",
-    "purpose": "Docker management UI"
+    "purpose": "Docker management UI",
+    "dns": "portainer.villaarreola.com",
+    "port": 9000,
+    "url": "https://portainer.villaarreola.com:9000"
   },
 
   {

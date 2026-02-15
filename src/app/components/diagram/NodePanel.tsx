@@ -1,7 +1,7 @@
 "use client";
 
 import { InfraItem } from "@/lib/infraTypes";
-import { Server, Layers, Network, GitBranch, Package, X } from "lucide-react";
+import { Server, Layers, Network, GitBranch, Package, X, Globe, ExternalLink } from "lucide-react";
 
 type Props = {
   node: InfraItem | null;
@@ -20,6 +20,19 @@ export default function NodePanel({ node, onClose }: Props) {
       default: return "bg-slate-500/20 text-slate-400 border-slate-500/30";
     }
   };
+
+  // Generar texto para mostrar (IP/DNS + puerto)
+  const getAccessText = () => {
+    const host = node.dns || node.ip;
+    if (!host) return null;
+    
+    if (node.port) {
+      return `${host}:${node.port}`;
+    }
+    return host;
+  };
+
+  const accessText = getAccessText();
 
   return (
     <aside className="w-full md:w-[340px] h-full backdrop-blur-xl bg-slate-900/70 border-l border-slate-800 overflow-y-auto">
@@ -91,6 +104,35 @@ export default function NodePanel({ node, onClose }: Props) {
             </div>
             <div className="pl-6">
               <p className="text-sm text-slate-300 leading-relaxed">{node.purpose}</p>
+            </div>
+          </section>
+        )}
+
+        {/* ===== ACCESS (IP/DNS + Port) ===== */}
+        {accessText && (
+          <section>
+            <div className="flex items-center gap-2 mb-2">
+              <Globe className="w-4 h-4 text-slate-400" />
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                Access
+              </h3>
+            </div>
+            <div className="pl-6">
+              {node.url ? (
+                <a
+                  href={node.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-blue-500/10 border border-blue-500/30 text-sm text-blue-400 font-mono hover:bg-blue-500/20 hover:border-blue-500/50 transition-all group"
+                >
+                  <span>{accessText}</span>
+                  <ExternalLink className="w-3 h-3 opacity-70 group-hover:opacity-100 transition-opacity" />
+                </a>
+              ) : (
+                <code className="inline-flex items-center px-3 py-1 rounded-md bg-slate-800/50 border border-slate-700 text-sm text-slate-300 font-mono">
+                  {accessText}
+                </code>
+              )}
             </div>
           </section>
         )}

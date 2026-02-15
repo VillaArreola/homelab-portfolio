@@ -139,6 +139,9 @@ export function treeToReactFlow(roots: InfraTreeNode[]) {
           icon: getIcon(node.type, node.id),
           status: getStatus(node.id),
           parent: parentId, // Agregar referencia al padre
+          ip: node.ip,
+          dns: node.dns,
+          port: node.port,
         },
       });
 
@@ -174,6 +177,9 @@ export function treeToReactFlow(roots: InfraTreeNode[]) {
         icon: getIcon(node.type, node.id),
         status: getStatus(node.id),
         parent: parentId, // Agregar referencia al padre
+        ip: node.ip,
+        dns: node.dns,
+        port: node.port,
       },
     });
 
