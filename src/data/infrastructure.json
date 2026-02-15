@@ -1,0 +1,142 @@
+[
+  {
+    "id": "laptop",
+    "name": "Main Laptop",
+    "type": "host",
+    "layer": "physical",
+    "purpose": "Primary workstation and lab host"
+  },
+
+  {
+    "id": "vmware",
+    "name": "VMware",
+    "type": "hypervisor",
+    "parent": "laptop",
+    "layer": "virtual",
+    "runtime": "vmware",
+    "purpose": "Local virtualization platform"
+  },
+
+  {
+    "id": "docker-local",
+    "name": "Docker (Local)",
+    "type": "container-runtime",
+    "parent": "laptop",
+    "layer": "virtual",
+    "runtime": "docker",
+    "purpose": "Local containers and services"
+  },
+
+  {
+    "id": "proxmox",
+    "name": "Proxmox VE",
+    "type": "hypervisor",
+    "parent": "laptop",
+    "layer": "virtual",
+    "runtime": "bare-metal",
+    "network": "10.10.10.0/24",
+    "purpose": "Main on-prem hypervisor"
+  },
+
+  {
+    "id": "pfsense",
+    "name": "pfSense",
+    "type": "vm",
+    "parent": "proxmox",
+    "layer": "virtual",
+    "network": "10.10.10.1",
+    "purpose": "Firewall and network segmentation"
+  },
+
+  {
+    "id": "wazuh",
+    "name": "Wazuh SIEM",
+    "type": "vm",
+    "parent": "proxmox",
+    "layer": "virtual",
+    "purpose": "Security monitoring and log analysis"
+  },
+
+  {
+    "id": "ubuntu-server",
+    "name": "Ubuntu Server",
+    "type": "vm",
+    "parent": "proxmox",
+    "layer": "virtual",
+    "purpose": "Internal services and containers"
+  },
+
+  {
+    "id": "kali",
+    "name": "Kali Linux",
+    "type": "vm",
+    "parent": "vmware",
+    "layer": "virtual",
+    "purpose": "Offensive security lab"
+  },
+
+  {
+    "id": "windows-11",
+    "name": "Windows 11",
+    "type": "vm",
+    "parent": "vmware",
+    "layer": "virtual",
+    "purpose": "Endpoint monitoring (Sysmon)"
+  },
+
+  {
+    "id": "oci",
+    "name": "OCI Cloud Instance",
+    "type": "cloud-host",
+    "layer": "cloud",
+    "network": "10.0.0.0/16",
+    "purpose": "Public services and external access"
+  },
+
+  {
+    "id": "docker-oci",
+    "name": "Docker (OCI)",
+    "type": "container-runtime",
+    "parent": "oci",
+    "layer": "cloud",
+    "runtime": "docker",
+    "purpose": "Cloud containers and services"
+  },
+
+  {
+    "id": "npm",
+    "name": "Nginx Proxy Manager",
+    "type": "service",
+    "parent": "docker-oci",
+    "layer": "cloud",
+    "purpose": "Reverse proxy and SSL"
+  },
+
+  {
+    "id": "n8n",
+    "name": "n8n",
+    "type": "service",
+    "parent": "docker-oci",
+    "layer": "cloud",
+    "purpose": "Automation workflows"
+  },
+
+  {
+    "id": "portainer",
+    "name": "Portainer",
+    "type": "service",
+    "parent": "docker-oci",
+    "layer": "cloud",
+    "purpose": "Docker management UI"
+  },
+
+  {
+    "id": "ceh-subnet",
+    "name": "CEH Lab Network",
+    "type": "subnet",
+    "parent": "pfsense",
+    "layer": "virtual",
+    "network": "20.20.20.0/24",
+    "purpose": "CEH practice lab (historical)"
+  }
+]

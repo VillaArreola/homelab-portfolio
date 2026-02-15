@@ -16,12 +16,15 @@ import InfraNode from "./InfraNode";
 import NodePanel from "./NodePanel";
 import Legend from "./Legend";
 import { labNodes } from "@/data/labData";
-import { Cloud, Shield, Server, Monitor } from "lucide-react";
+import { RotateCcw } from "lucide-react";
+import infraData from "@/data/infrastructure.json";
+import { buildInfraTree } from "@/lib/buildTree";
+import { treeToReactFlow } from "@/lib/treeToFlow";
 
 type NodeData = {
   label: string;
   role: string;
-  color: string;
+  color?: string;
   icon?: React.ReactNode;
 };
 
@@ -32,97 +35,18 @@ const nodeTypes = {
 export default function LabDiagram() {
   const [selected, setSelected] = useState<any>(null);
 
-  /* =========================
-     TECHNICAL VIEW NODES
-     ========================= */
-  const initialNodes: Node<NodeData>[] = [
- {
-  id: "oci",
-  type: "infra",
-  position: { x: 400, y: 120 },
-  data: {
-    label: "OCI Cloud",
-    role: "Public Entry / Docker Host",
-    color: "#0b1d33",
-    icon: <Cloud size={28} />,
-  },
-},
-    {
-      id: "proxmox",
-      type: "infra",
-      position: { x: 400, y: 350 },
-      data: {
-        label: "Proxmox",
-        role: "Hypervisor (Laptop)",
-        color: "#312e81",
-      },
-    },
-    {
-      id: "pfsense",
-      type: "infra",
-      position: { x: 400, y: 520 },
-      data: {
-        label: "pfSense",
-        role: "Firewall & Segmentation",
-        color: "#3f1d1d",
-      },
-    },
-    {
-      id: "wazuh",
-      type: "infra",
-      position: { x: 200, y: 720 },
-      data: {
-        label: "Wazuh",
-        role: "SIEM",
-        color: "#064e3b",
-      },
-    },
-    {
-      id: "win11",
-      type: "infra",
-      position: { x: 350, y: 720 },
-      data: {
-        label: "Windows 11",
-        role: "Endpoint + Sysmon",
-        color: "#374151",
-      },
-    },
-    {
-      id: "kali",
-      type: "infra",
-      position: { x: 520, y: 720 },
-      data: {
-        label: "Kali Linux",
-        role: "Offensive Lab",
-        color: "#374151",
-      },
-    },
-    {
-      id: "ubuntu",
-      type: "infra",
-      position: { x: 680, y: 720 },
-      data: {
-        label: "Ubuntu Server",
-        role: "Services",
-        color: "#374151",
-      },
-    },
-  ];
+  // Generar nodos y aristas desde el JSON
+  const tree = buildInfraTree(infraData);
+  const flowData = treeToReactFlow(tree);
 
-  /* =========================
-     EDGES
-     ========================= */
-  const initialEdges: Edge[] = [
-    { id: "e1", source: "oci", target: "proxmox" },
-    { id: "e2", source: "proxmox", target: "pfsense" },
-    { id: "e3", source: "pfsense", target: "wazuh" },
-    { id: "e4", source: "pfsense", target: "win11" },
-    { id: "e5", source: "pfsense", target: "kali" },
-    { id: "e6", source: "pfsense", target: "ubuntu" },
-  ];
+  const [nodes, setNodes, onNodesChange] = useNodesState(flowData.nodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(flowData.edges);
 
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+  const handleReset = () => {
+    const tree = buildInfraTree(infraData);
+    const flowData = treeToReactFlow(tree);
+    setNodes(flowData.nodes);
+  };
 
   return (
     <div className="h-screen flex bg-neutral-950">
@@ -145,6 +69,25 @@ export default function LabDiagram() {
           <Controls />
           <Background />
         </ReactFlow>
+
+        {/* Botón de Reset */}
+        <button
+          onClick={handleReset}
+          className="
+            absolute top-4 right-4 z-10
+            flex items-center gap-2
+            px-4 py-2
+            bg-slate-800 hover:bg-slate-700
+            text-white text-sm font-medium
+            rounded-lg border border-slate-600
+            shadow-lg
+            transition-colors
+          "
+          title="Restaurar posiciones"
+        >
+          <RotateCcw size={16} />
+          Reset
+        </button>
 
         <Legend />
       </div>

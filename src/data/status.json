@@ -1,0 +1,17 @@
+{
+  "laptop": "up",
+  "vmware": "up",
+  "docker-local": "up",
+  "proxmox": "up",
+  "pfsense": "up",
+  "wazuh": "up",
+  "ubuntu-server": "up",
+  "kali": "up",
+  "windows-11": "up",
+  "oci": "up",
+  "docker-oci": "up",
+  "npm": "up",
+  "n8n": "up",
+  "portainer": "up",
+  "ceh-subnet": "down"
+}
