@@ -6,7 +6,7 @@ type Props = {
     role?: string;
     color?: string;
     icon?: React.ReactNode;
-    status?: "up" | "down" | "unknown";
+    status?: "up" | "down" | "unknown" | "off";
   };
 };
 
@@ -17,6 +17,7 @@ const statusStyles = {
   up: "border-emerald-500/50 shadow-emerald-500/20",
   down: "border-red-500/50 shadow-red-500/20",
   unknown: "border-slate-700/50",
+  off: "border-slate-600/30 shadow-slate-600/10",
 };
 
 // Helper para convertir hex a rgba
@@ -44,6 +45,7 @@ export default function InfraNode({ data }: Props) {
         transition-all hover:shadow-2xl hover:-translate-y-1
         ${statusStyles[status]}
         ${status === "down" ? "opacity-90" : ""}
+        ${status === "off" ? "opacity-50 grayscale" : ""}
       `}
       style={{
         minWidth: 200,
@@ -96,9 +98,17 @@ export default function InfraNode({ data }: Props) {
           ${status === "up" ? "bg-emerald-400 animate-pulse" : ""}
           ${status === "down" ? "bg-red-500" : ""}
           ${status === "unknown" ? "bg-slate-500" : ""}
+          ${status === "off" ? "bg-slate-600" : ""}
         `}
         title={`Status: ${status}`}
       />
+
+      {/* ===== OFF LABEL ===== */}
+      {status === "off" && (
+        <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-slate-700 rounded text-[9px] font-semibold text-slate-400 uppercase tracking-wide">
+          Off
+        </div>
+      )}
 
       {/* ===== CONNECTION POINTS ===== */}
       <Handle

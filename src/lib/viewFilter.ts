@@ -22,22 +22,43 @@ export const applyView = (
 
   const visibleNodeIds = new Set<string>();
 
+  // Función para agregar todos los ancestros (padres) de un nodo
+  const addAncestors = (nodeId: string) => {
+    const node = allNodes.find((n) => n.id === nodeId);
+    if (!node) return;
+
+    // Buscar el padre del nodo
+    const parentId = node.parentId || node.data?.parent;
+    if (parentId && !visibleNodeIds.has(parentId)) {
+      visibleNodeIds.add(parentId);
+      // Recursivamente agregar ancestros del padre
+      addAncestors(parentId);
+    }
+  };
+
+  // Función para agregar todos los descendientes (hijos) de un nodo
+  const addChildren = (parentId: string) => {
+    allNodes.forEach((node) => {
+      // Verificar si este nodo es hijo del padre actual
+      if (node.parentId === parentId || node.data?.parent === parentId) {
+        if (!visibleNodeIds.has(node.id)) {
+          visibleNodeIds.add(node.id);
+          // Recursivamente agregar hijos de este nodo
+          addChildren(node.id);
+        }
+      }
+    });
+  };
+
   // Agregar nodos incluidos explícitamente
   viewConfig.include.forEach((id) => {
     visibleNodeIds.add(id);
 
+    // Agregar todos los ancestros (padres hacia arriba)
+    addAncestors(id);
+
     // Si expandChildren está activado, agregar todos los descendientes
     if (viewConfig.expandChildren) {
-      const addChildren = (parentId: string) => {
-        allNodes.forEach((node) => {
-          // Verificar si este nodo es hijo del padre actual
-          if (node.parentId === parentId || node.data?.parent === parentId) {
-            visibleNodeIds.add(node.id);
-            // Recursivamente agregar hijos de este nodo
-            addChildren(node.id);
-          }
-        });
-      };
       addChildren(id);
     }
   });

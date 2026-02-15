@@ -10,6 +10,10 @@ export default function Legend() {
         <span className="text-xs font-medium text-slate-300">Attention Required</span>
       </div>
       <div className="flex items-center gap-3">
+        <div className="w-3 h-3 rounded-full bg-slate-600"></div>
+        <span className="text-xs font-medium text-slate-300">Powered Off</span>
+      </div>
+      <div className="flex items-center gap-3">
         <div className="w-3 h-3 rounded-full bg-blue-500"></div>
         <span className="text-xs font-medium text-slate-300">Cloud Managed</span>
       </div>

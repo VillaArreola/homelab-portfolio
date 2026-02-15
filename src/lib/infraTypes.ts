@@ -6,6 +6,7 @@ export type InfraItem = {
   layer?: string;
   network?: string;
   purpose?: string;
+  runtime?: string;
 };
 
 export type InfraTreeNode = InfraItem & {

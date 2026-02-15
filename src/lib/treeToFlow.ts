@@ -101,9 +101,9 @@ function getIconColor(type: string, id: string): string {
 
 // ================================
 // Helper de estado para nodos
-function getStatus(id: string): "up" | "down" | "unknown" {
+function getStatus(id: string): "up" | "down" | "unknown" | "off" {
   const status = statusMap[id as keyof typeof statusMap];
-  if (status === "up" || status === "down") {
+  if (status === "up" || status === "down" || status === "off") {
     return status;
   }
   return "unknown";
@@ -138,6 +138,7 @@ export function treeToReactFlow(roots: InfraTreeNode[]) {
           color: getIconColor(node.type, node.id),
           icon: getIcon(node.type, node.id),
           status: getStatus(node.id),
+          parent: parentId, // Agregar referencia al padre
         },
       });
 
@@ -172,6 +173,7 @@ export function treeToReactFlow(roots: InfraTreeNode[]) {
         color: getIconColor(node.type, node.id),
         icon: getIcon(node.type, node.id),
         status: getStatus(node.id),
+        parent: parentId, // Agregar referencia al padre
       },
     });
 

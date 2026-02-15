@@ -138,5 +138,18 @@
     "layer": "virtual",
     "network": "20.20.20.0/24",
     "purpose": "CEH practice lab (historical)"
+  },
+
+    {
+    "id": "ceh-windows",
+    "name": "CEH Windows VM",
+    "type": "vm",
+    "parent": "ceh-subnet",
+    "layer": "virtual",
+    "network": "20.20.20.30",
+    "purpose": "CEH practice lab"
   }
+
+  
 ]
+
