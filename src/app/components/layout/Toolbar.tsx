@@ -139,6 +139,7 @@ export default function Toolbar({
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyDown={handleSearchKeyDown}
             placeholder="Find node..."
+            suppressHydrationWarning
             className="
               w-full px-3 py-2 pl-9 pr-9
               bg-slate-800/50 border border-slate-700
@@ -375,30 +376,6 @@ export default function Toolbar({
             </div>
           </div>
         )}
-
-        {/* Quick Stats - Ocultar en móviles */}
-        <div className="hidden lg:flex pt-4 flex-col gap-2">
-          <span className="text-[10px] font-bold text-slate-400 uppercase px-2 tracking-wider">
-            Quick Stats
-          </span>
-          <div className="bg-gradient-to-br from-slate-800/40 to-slate-900/40 p-3 rounded-xl border border-white/5 space-y-2">
-            <div className="flex justify-between items-center">
-              <span className="text-xs text-slate-400">Total RAM</span>
-              <span className="text-xs font-mono">24GB+</span>
-            </div>
-            <div className="w-full bg-slate-700 h-1 rounded-full overflow-hidden">
-              <div className="bg-blue-500 h-full w-[68%]"></div>
-            </div>
-            <div className="flex justify-between items-center pt-2">
-              <span className="text-xs text-slate-400">Containers</span>
-              <span className="text-xs font-mono">14 Active</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-xs text-slate-400">Security</span>
-              <span className="text-xs font-mono text-emerald-400">Compliant</span>
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* Zoom Controls */}

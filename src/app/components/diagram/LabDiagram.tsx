@@ -14,12 +14,13 @@ import ReactFlow, {
   getViewportForBounds,
 } from "reactflow";
 import "reactflow/dist/style.css";
-import { Menu, X } from "lucide-react";
+import { Menu, X, MessageSquare } from "lucide-react";
 
 import InfraNode from "./InfraNode";
 import NodePanel from "./NodePanel";
 import Legend from "./Legend";
 import Toolbar from "../layout/Toolbar";
+import ChatWithInfra from "../chat/ChatWithInfra";
 import AdminLoginModal from "../modals/AdminLoginModal";
 import NodeEditorModal from "../modals/NodeEditorModal";
 import infraData from "@/data/infrastructure.json";
@@ -60,6 +61,7 @@ function DiagramContent() {
   const [savedLayouts, setSavedLayouts] = useState<SavedLayout[]>([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
+  const [isChatVisible, setIsChatVisible] = useState(false);
 
   // Node Editor states
   const [isAdmin, setIsAdmin] = useState(false);
@@ -540,6 +542,40 @@ function DiagramContent() {
             color="transparent"
           />
         </ReactFlow>
+
+        {/* Chat flotante - posicionado al lado del MiniMap */}
+        <div className="absolute bottom-4 left-4 z-40">
+          {isChatVisible ? (
+            <div className="flex flex-col gap-2">
+              <ChatWithInfra infrastructureData={currentTopology} />
+              <button
+                onClick={() => setIsChatVisible(false)}
+                className="self-start px-3 py-2 bg-slate-900/95 backdrop-blur-xl border border-slate-700/50 rounded-xl shadow-xl text-blue-400 hover:text-blue-300 hover:bg-slate-800/95 transition-all"
+                title="Ocultar chat"
+                aria-label="Ocultar chat"
+              >
+                <MessageSquare size={18} />
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setIsChatVisible(true)}
+                className="px-3 py-2 bg-slate-900/95 backdrop-blur-xl border border-slate-700/50 rounded-xl shadow-xl text-blue-400 hover:text-blue-300 hover:bg-slate-800/95 transition-all"
+                title="Mostrar chat"
+                aria-label="Mostrar chat"
+              >
+                <MessageSquare size={18} />
+              </button>
+              <div className="px-4 py-2 bg-gradient-to-br from-blue-600/10 via-purple-600/10 to-slate-900/95 backdrop-blur-xl rounded-xl border border-blue-500/20 shadow-xl">
+                <div className="flex flex-col">
+                  <span className="text-sm font-bold text-slate-200">¡Hola! 👋</span>
+                  <span className="text-xs text-slate-400">Pregúntame sobre la infraestructura</span>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* Save Message Notification */}
         {saveMessage && (

@@ -13,8 +13,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Lab_Core v2.4 - Infrastructure Topology",
+  title: "My Homelab Portfolio",
   description: "Interactive homelab infrastructure diagram with real-time monitoring",
+  icons: {
+    icon: "/MVA.svg",
+  },
 };
 
 export const viewport: Viewport = {
