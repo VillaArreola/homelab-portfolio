@@ -27,6 +27,12 @@ export default function NodeEditorModal({ isOpen, mode, node, allNodes, onClose,
     dns: undefined,
     port: undefined,
     url: undefined,
+    documentation: undefined,
+    configuration: undefined,
+    notes: undefined,
+    tags: undefined,
+    links: undefined,
+    metadata: undefined,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -48,6 +54,12 @@ export default function NodeEditorModal({ isOpen, mode, node, allNodes, onClose,
           dns: undefined,
           port: undefined,
           url: undefined,
+          documentation: undefined,
+          configuration: undefined,
+          notes: undefined,
+          tags: undefined,
+          links: undefined,
+          metadata: undefined,
         });
       }
       setErrors({});
@@ -100,6 +112,12 @@ export default function NodeEditorModal({ isOpen, mode, node, allNodes, onClose,
       dns: undefined,
       port: undefined,
       url: undefined,
+      documentation: undefined,
+      configuration: undefined,
+      notes: undefined,
+      tags: undefined,
+      links: undefined,
+      metadata: undefined,
     });
     setErrors({});
     onClose();
@@ -456,6 +474,77 @@ export default function NodeEditorModal({ isOpen, mode, node, allNodes, onClose,
                   placeholder:text-slate-500
                   focus:outline-none focus:border-blue-500/50 focus:bg-slate-800/70
                   transition-all font-mono
+                "
+              />
+            </div>
+          </div>
+
+          {/* Documentation */}
+          <div className="space-y-4 pt-4 border-t border-slate-800">
+            <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">Documentation</h3>
+            
+            {/* Documentation Field */}
+            <div>
+              <label htmlFor="node-documentation" className="block text-sm font-medium text-slate-300 mb-2">
+                Documentation (Markdown supported)
+              </label>
+              <textarea
+                id="node-documentation"
+                value={formData.documentation || ""}
+                onChange={(e) => updateField("documentation", e.target.value)}
+                placeholder="## Setup Instructions\n\nDetailed documentation here...\n\n- Step 1\n- Step 2"
+                rows={6}
+                className="
+                  w-full px-4 py-2.5 
+                  bg-slate-800/50 border border-slate-700
+                  rounded-lg text-sm text-slate-200
+                  placeholder:text-slate-500
+                  focus:outline-none focus:border-blue-500/50 focus:bg-slate-800/70
+                  transition-all font-mono resize-y
+                "
+              />
+            </div>
+
+            {/* Configuration Field */}
+            <div>
+              <label htmlFor="node-configuration" className="block text-sm font-medium text-slate-300 mb-2">
+                Configuration / Commands
+              </label>
+              <textarea
+                id="node-configuration"
+                value={formData.configuration || ""}
+                onChange={(e) => updateField("configuration", e.target.value)}
+                placeholder="# Install Nginx\napt update && apt install nginx\n\n# Configuration\nvim /etc/nginx/nginx.conf"
+                rows={5}
+                className="
+                  w-full px-4 py-2.5 
+                  bg-slate-800/50 border border-slate-700
+                  rounded-lg text-sm text-slate-200
+                  placeholder:text-slate-500
+                  focus:outline-none focus:border-blue-500/50 focus:bg-slate-800/70
+                  transition-all font-mono resize-y
+                "
+              />
+            </div>
+
+            {/* Notes Field */}
+            <div>
+              <label htmlFor="node-notes" className="block text-sm font-medium text-slate-300 mb-2">
+                Notes / Troubleshooting
+              </label>
+              <textarea
+                id="node-notes"
+                value={formData.notes || ""}
+                onChange={(e) => updateField("notes", e.target.value)}
+                placeholder="Quick notes, troubleshooting tips, known issues..."
+                rows={4}
+                className="
+                  w-full px-4 py-2.5 
+                  bg-slate-800/50 border border-slate-700
+                  rounded-lg text-sm text-slate-200
+                  placeholder:text-slate-500
+                  focus:outline-none focus:border-blue-500/50 focus:bg-slate-800/70
+                  transition-all font-mono resize-y
                 "
               />
             </div>

@@ -35,7 +35,10 @@
     "purpose": "Main on-prem hypervisor",
     "ip": "10.10.10.53",
     "port": 8006,
-    "url": "https://10.10.10.53:8006"
+    "url": "https://10.10.10.53:8006",
+    "documentation": "## Overview\n\nProxmox Virtual Environment (VE) is the primary hypervisor for the homelab, running directly on bare-metal. It provides enterprise-grade virtualization with KVM and LXC containers.\n\n## Features\n\n- **Web-based Management**: Full-featured web UI at port 8006\n- **High Availability**: ZFS storage with snapshots and backup\n- **Clustering**: Ready for multi-node setup\n- **API Access**: RESTful API for automation\n\n## Network Configuration\n\n- Management VLAN: 10.10.10.0/24\n- Gateway: 10.10.10.1 (pfSense)\n- DNS: 1.1.1.1, 8.8.8.8\n\n## Storage\n\n- **local**: OS and ISOs (ZFS)\n- **local-lvm**: VM disks (thin provisioning)\n- Backup directory: `/mnt/backups`\n\n## Security\n\n- Two-factor authentication enabled\n- Firewall rules configured\n- Regular backup schedule (daily incremental)",
+    "configuration": "# Initial Setup Commands\n\n# Update system\napt update && apt full-upgrade -y\n\n# Configure network bridge\nvim /etc/network/interfaces\n# Add vmbr0 configuration\n\n# Enable IOMMU for GPU passthrough\nvim /etc/default/grub\nGRUB_CMDLINE_LINUX_DEFAULT=\"quiet intel_iommu=on\"\nupdate-grub\n\n# Install useful tools\napt install htop iotop vim git -y\n\n# Create storage pool\nzpool create -f tank /dev/sdb\npvesm add zfspool tank -pool tank\n\n# Backup configuration\npvecm backup /root/pve-backup.tar.gz",
+    "notes": "**Important**: Root password expires every 90 days - update in password manager.\n\n**Known Issues**:\n- GPU passthrough requires VM restart after host reboot\n- Web UI occasionally slow on first load (cache issue)\n\n**Maintenance Schedule**:\n- Weekly: Check disk health, review logs\n- Monthly: Update packages, test backups\n- Quarterly: Full system backup to external drive"
   },
   {
     "id": "pfsense",
@@ -47,7 +50,10 @@
     "purpose": "Firewall and network segmentation",
     "ip": "10.10.10.1",
     "port": 443,
-    "url": "https://10.10.10.1"
+    "url": "https://10.10.10.1",
+    "documentation": "## Role\n\nCentral firewall and router for the homelab, providing network segmentation, VPN access, and traffic filtering.\n\n## VLANs Configured\n\n1. **VLAN 10** (10.10.10.0/24) - Management (Proxmox, Services)\n2. **VLAN 20** (20.20.20.0/24) - Lab/Testing (CEH practice)\n3. **VLAN 30** (10.10.30.0/24) - Guest WiFi (isolated)\n4. **VLAN 40** (10.10.40.0/24) - IoT devices (restricted)\n\n## Installed Packages\n\n- **pfBlockerNG**: DNS ad-blocking and geo-blocking\n- **Suricata**: IDS/IPS with ET Open ruleset\n- **OpenVPN**: Remote access VPN\n- **HAProxy**: Load balancing for web services\n\n## VPN Configuration\n\n- OpenVPN server: Port 1194 UDP\n- Tunnel network: 10.8.0.0/24\n- Certificate authentication + 2FA (via FreeRADIUS)\n\n## Firewall Rules\n\nAll inter-VLAN traffic denied by default. Explicit allow rules:\n- Management VLAN → All (full access)\n- Lab VLAN → Internet only\n- Guest VLAN → Internet only (port 80/443)\n- IoT VLAN → Cloudflare DNS only",
+    "configuration": "# pfSense Configuration Backup\n\n# SSH to pfSense\nssh admin@10.10.10.1\n\n# Backup configuration\nscp admin@10.10.10.1:/cf/conf/config.xml ./pfsense-backup-$(date +%Y%m%d).xml\n\n# Update packages via CLI\nphp /usr/local/bin/pfSense-upgrade\n\n# Restart firewall service\npfctl -d && pfctl -e -f /tmp/rules.debug\n\n# Monitor real-time logs\nclog -f /var/log/filter.log\n\n# Check OpenVPN status\n/usr/local/sbin/openvpn --show-status /var/etc/openvpn/server1/status",
+    "notes": "**Credentials**: Stored in Bitwarden vault under 'Homelab/pfSense'\n\n**Backup Strategy**: Auto-backup to OCI cloud daily via cron\n\n**Performance**: Monitor CPU usage - Suricata can spike to 40% during traffic bursts\n\n**Troubleshooting**:\n- If VPN stops: Check certificate expiry (90 days)\n- Slow DNS: Clear pfBlockerNG cache\n- Rules not applying: Check NAT outbound mode (should be Hybrid)"
   },
   {
     "id": "wazuh",
