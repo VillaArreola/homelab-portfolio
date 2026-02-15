@@ -1,6 +1,6 @@
 "use client";
 
-import { Network, Globe, Flag, Cat, Linkedin, Github, Mail } from "lucide-react";
+import { Network, Globe, Flag, SquareDashedBottomCode, Linkedin, Github, Mail } from "lucide-react";
 
 export default function Header() {
   return (
@@ -10,7 +10,7 @@ export default function Header() {
         <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-500/10 border border-blue-500/20">
           <Network className="text-blue-400" size={20} strokeWidth={2.5} />
           <h1 className="font-bold text-base tracking-tight text-slate-100">
-            VILLAARREOLA Lab
+            VILLAARREOLA LAB
           </h1>
         </div>
       </div>
@@ -31,7 +31,7 @@ export default function Header() {
             transition-all duration-200
           "
         >
-          <Globe size={16} />
+          <Globe size={16} className="text-emerald-400" />
           <span>Website</span>
         </a>
         <a
@@ -45,11 +45,11 @@ export default function Header() {
             transition-all duration-200
           "
         >
-          <Flag size={16} />
+          <Flag size={16} className="text-purple-400" />
           <span>CTF</span>
         </a>
         <a
-          href="https://cats.villaarreola.com"
+          href="https://cheat.villaarreola.com"
           target="_blank"
           rel="noopener noreferrer"
           className="
@@ -59,8 +59,8 @@ export default function Header() {
             transition-all duration-200
           "
         >
-          <Cat size={16} />
-          <span>Cats</span>
+          <SquareDashedBottomCode size={16} className="text-blue-400" />
+          <span>Cheat Sheets</span>
         </a>
       </nav>
 
