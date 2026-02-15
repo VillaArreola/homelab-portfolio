@@ -2,7 +2,7 @@
   "laptop": "up",
   "vmware": "up",
   "docker-local": "up",
-  "proxmox": "up",
+  "proxmox": "down",
   "pfsense": "up",
   "wazuh": "up",
   "ubuntu-server": "up",

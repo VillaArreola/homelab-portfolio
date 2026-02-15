@@ -3,13 +3,13 @@
 import { useState, useEffect, useCallback } from "react";
 import ReactFlow, {
   Background,
-  Controls,
   MiniMap,
   useNodesState,
   useEdgesState,
   Node,
   Edge,
   useReactFlow,
+  ReactFlowProvider,
 } from "reactflow";
 import "reactflow/dist/style.css";
 
@@ -24,9 +24,13 @@ import { treeToReactFlow } from "@/lib/treeToFlow";
 import { InfraItem } from "@/lib/infraTypes";
 import {
   saveLayout,
-  loadLayout,
-  clearLayout,
+  loadLastLayout,
+  clearAllLayouts,
   applyLayout,
+  getSavedLayouts,
+  loadLayout,
+  deleteLayout,
+  SavedLayout,
 } from "@/lib/layoutStorage";
 import { applyView, ViewConfig, getViewRootNodes } from "@/lib/viewFilter";
 
@@ -41,11 +45,13 @@ const nodeTypes = {
   infra: InfraNode,
 };
 
-export default function LabDiagram() {
+function DiagramContent() {
+  const reactFlowInstance = useReactFlow();
   const [selected, setSelected] = useState<InfraItem | null>(null);
   const [activeView, setActiveView] = useState<string>("full");
   const [layoutMode, setLayoutMode] = useState<"auto" | "manual">("manual");
   const [saveMessage, setSaveMessage] = useState<string>("");
+  const [savedLayouts, setSavedLayouts] = useState<SavedLayout[]>([]);
 
   // Generar nodos y aristas iniciales desde el JSON
   const tree = buildInfraTree(infraData);
@@ -60,9 +66,13 @@ export default function LabDiagram() {
 
   // Cargar layout guardado al montar
   useEffect(() => {
-    const savedLayout = loadLayout();
-    if (savedLayout) {
-      const nodesWithLayout = applyLayout(allNodes, savedLayout);
+    const layouts = getSavedLayouts();
+    setSavedLayouts(layouts);
+
+    // Cargar el layout más reciente si existe
+    const lastLayout = loadLastLayout();
+    if (lastLayout) {
+      const nodesWithLayout = applyLayout(allNodes, lastLayout);
       setAllNodes(nodesWithLayout);
       setNodes(nodesWithLayout);
       setLayoutMode("manual");
@@ -87,14 +97,42 @@ export default function LabDiagram() {
 
   // Guardar layout
   const handleSave = useCallback(() => {
-    saveLayout(nodes);
-    setSaveMessage("✓ Layout saved");
+    const newLayout = saveLayout(nodes);
+    const layouts = getSavedLayouts();
+    setSavedLayouts(layouts);
+    setSaveMessage(`✓ ${newLayout.name} saved`);
     setTimeout(() => setSaveMessage(""), 2000);
   }, [nodes]);
 
+  // Cargar un layout específico
+  const handleLoadLayout = useCallback(
+    (layoutId: string) => {
+      const layoutData = loadLayout(layoutId);
+      if (layoutData) {
+        const nodesWithLayout = applyLayout(allNodes, layoutData);
+        setAllNodes(nodesWithLayout);
+        setNodes(nodesWithLayout);
+        setLayoutMode("manual");
+        setSaveMessage("✓ Layout loaded");
+        setTimeout(() => setSaveMessage(""), 2000);
+      }
+    },
+    [allNodes, setNodes]
+  );
+
+  // Eliminar un layout
+  const handleDeleteLayout = useCallback((layoutId: string) => {
+    deleteLayout(layoutId);
+    const layouts = getSavedLayouts();
+    setSavedLayouts(layouts);
+    setSaveMessage("✓ Layout deleted");
+    setTimeout(() => setSaveMessage(""), 2000);
+  }, []);
+
   // Reset a layout automático
   const handleReset = useCallback(() => {
-    clearLayout();
+    clearAllLayouts();
+    setSavedLayouts([]);
     const tree = buildInfraTree(infraData);
     const flowData = treeToReactFlow(tree);
     setAllNodes(flowData.nodes);
@@ -102,7 +140,7 @@ export default function LabDiagram() {
     setEdges(flowData.edges);
     setActiveView("full");
     setLayoutMode("auto");
-    setSaveMessage("✓ Layout reset");
+    setSaveMessage("✓ All layouts cleared");
     setTimeout(() => setSaveMessage(""), 2000);
   }, [setNodes, setEdges]);
 
@@ -119,7 +157,8 @@ export default function LabDiagram() {
     (mode: "auto" | "manual") => {
       setLayoutMode(mode);
       if (mode === "auto") {
-        clearLayout();
+        clearAllLayouts();
+        setSavedLayouts([]);
         const tree = buildInfraTree(infraData);
         const flowData = treeToReactFlow(tree);
         setAllNodes(flowData.nodes);
@@ -129,10 +168,39 @@ export default function LabDiagram() {
     [setNodes]
   );
 
+  // Controles de zoom
+  const handleZoomIn = useCallback(() => {
+    reactFlowInstance.zoomIn({ duration: 300 });
+  }, [reactFlowInstance]);
+
+  const handleZoomOut = useCallback(() => {
+    reactFlowInstance.zoomOut({ duration: 300 });
+  }, [reactFlowInstance]);
+
+  const handleFitView = useCallback(() => {
+    reactFlowInstance.fitView({ duration: 500, padding: 0.2 });
+  }, [reactFlowInstance]);
+
   return (
-    <div className="h-screen flex bg-neutral-950">
+    <div className="h-full flex bg-slate-950">
+      {/* Sidebar/Toolbar */}
+      <Toolbar
+        activeView={activeView}
+        onViewChange={handleViewChange}
+        onSave={handleSave}
+        onReset={handleReset}
+        layoutMode={layoutMode}
+        onLayoutModeChange={handleLayoutModeChange}
+        savedLayouts={savedLayouts}
+        onLoadLayout={handleLoadLayout}
+        onDeleteLayout={handleDeleteLayout}
+        onZoomIn={handleZoomIn}
+        onZoomOut={handleZoomOut}
+        onFitView={handleFitView}
+      />
+
       {/* ===== DIAGRAM AREA ===== */}
-      <div className="flex-1 relative">
+      <div className="flex-1 relative bg-slate-950">
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -146,27 +214,28 @@ export default function LabDiagram() {
           }}
           fitView
         >
-          <MiniMap />
-          <Controls />
-          <Background />
+          <MiniMap 
+            nodeStrokeWidth={2}
+            zoomable
+            pannable
+            maskColor="rgba(15, 23, 42, 0.4)"
+            style={{
+              borderRadius: '1rem',
+            }}
+          />
+          <Background 
+            gap={24}
+            size={0}
+            color="transparent"
+          />
         </ReactFlow>
 
         {/* Save Message Notification */}
         {saveMessage && (
-          <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-20 px-4 py-2 bg-green-500 text-white rounded-lg shadow-lg animate-fade-in">
+          <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-20 px-4 py-2 bg-emerald-500 text-white rounded-lg shadow-lg animate-fade-in font-medium text-sm">
             {saveMessage}
           </div>
         )}
-
-        {/* Toolbar */}
-        <Toolbar
-          activeView={activeView}
-          onViewChange={handleViewChange}
-          onSave={handleSave}
-          onReset={handleReset}
-          layoutMode={layoutMode}
-          onLayoutModeChange={handleLayoutModeChange}
-        />
 
         <Legend />
       </div>
@@ -174,5 +243,13 @@ export default function LabDiagram() {
       {/* ===== SIDE PANEL ===== */}
       <NodePanel node={selected} />
     </div>
+  );
+}
+
+export default function LabDiagram() {
+  return (
+    <ReactFlowProvider>
+      <DiagramContent />
+    </ReactFlowProvider>
   );
 }

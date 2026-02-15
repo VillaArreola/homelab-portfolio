@@ -1,0 +1,23 @@
+[
+  {
+    "from": "laptop",
+    "to": "oci",
+    "type": "ssh",
+    "label": "Encrypted Tunnel Active",
+    "description": "SSH connection to cloud instance"
+  },
+  {
+    "from": "laptop",
+    "to": "proxmox",
+    "type": "ssh",
+    "label": "Encrypted Tunnel Active",
+    "description": "SSH connection to Proxmox host"
+  },
+  {
+    "from": "laptop",
+    "to": "ubuntu-server",
+    "type": "ssh",
+    "label": "Encrypted Tunnel Active",
+    "description": "SSH connection to Ubuntu server"
+  }
+]
