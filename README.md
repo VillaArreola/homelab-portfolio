@@ -8,7 +8,7 @@ Interactive visualization and documentation of homelab network topology with AI-
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 
-![Homelab Topology Diagram](./docs/screenshot.png)
+![Homelab Topology Diagram](./public/diagram.png)
 
 ## ✨ Features
 
@@ -33,7 +33,7 @@ Interactive visualization and documentation of homelab network topology with AI-
 
 ```bash
 # Clone repository
-git clone https://github.com/your-username/homelab-portfolio.git
+git clone https://github.com/VillaArreola/homelab-portfolio.git
 cd homelab-portfolio
 
 # Install dependencies
@@ -75,38 +75,6 @@ For detailed LLM setup instructions, see [LLM_CONFIG.md](LLM_CONFIG.md).
 - **OpenRouter** - Easy setup with many models
 - **OpenAI** - Direct API integration
 - **Local Models** - Via LiteLLM with Ollama/LM Studio
-
-## 📦 Deployment
-
-### Vercel (Recommended)
-
-1. **Push to GitHub**
-   ```bash
-   git add .
-   git commit -m "Initial commit"
-   git push origin main
-   ```
-
-2. **Import to Vercel**
-   - Go to [vercel.com](https://vercel.com)
-   - Click "New Project"
-   - Import your GitHub repository
-   - Vercel auto-detects Next.js configuration
-
-3. **Configure Environment Variables**
-   - In Vercel dashboard: Settings → Environment Variables
-   - Add all variables from `.env.local`
-   - Apply to Production, Preview, and Development environments
-
-4. **Deploy**
-   - Click "Deploy"
-   - Your site will be live in ~2 minutes
-
-### Other Platforms
-
-- **Netlify**: Compatible with Next.js runtime
-- **Railway**: Easy deployment with CLI
-- **Self-Hosted**: Build and run with Docker
 
 ```bash
 # Build for production
@@ -215,17 +183,9 @@ Contributions welcome! Please:
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🙏 Acknowledgments
-
-- React Flow for the amazing graph library
-- LiteLLM for universal LLM proxy
-- Vercel for hosting platform
-- Lucide for beautiful icons
-
 ## 📧 Contact
 
-For questions or feedback, open an issue or reach out via [your contact method].
+For questions or feedback, open an issue or reach out via https://www.villaarreola.com.
 
 ---
 
-**Built with ❤️ for homelab enthusiasts**
