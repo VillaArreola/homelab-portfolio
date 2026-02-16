@@ -7,8 +7,8 @@ Interactive visualization and documentation of homelab network topology with AI-
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?logo=typescript)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
-<!-- Add screenshot here after deployment -->
-<!-- ![Homelab Topology Diagram](./docs/screenshot.png) -->
+
+![Homelab Topology Diagram](./docs/screenshot.png)
 
 ## ✨ Features
 

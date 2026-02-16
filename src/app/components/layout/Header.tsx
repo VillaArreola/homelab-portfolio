@@ -1,6 +1,7 @@
 "use client";
 
-import { Network, Globe, Flag, SquareDashedBottomCode, Linkedin, Github, Mail } from "lucide-react";
+import { Network, Globe, Flag, SquareDashedBottomCode, Linkedin, Github, Mail, Scale } from "lucide-react";
+import Link from "next/link";
 
 export default function Header() {
   return (
@@ -117,6 +118,18 @@ export default function Header() {
         >
           <Mail size={18} />
         </a>
+        <Link
+          href="/terms"
+          className="
+            p-2 rounded-lg
+            text-slate-500 hover:text-slate-300 hover:bg-slate-800/50
+            transition-all duration-200
+          "
+          aria-label="Terms"
+          title="Terms of Service"
+        >
+          <Scale size={16} />
+        </Link>
       </div>
     </header>
   );
