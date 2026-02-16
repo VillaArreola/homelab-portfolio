@@ -32,7 +32,7 @@ export default function Header() {
           "
         >
           <Globe size={16} className="text-emerald-400" />
-          <span>Website</span>
+          <span>My Website</span>
         </a>
         <a
           href="https://ctf.villaarreola.com"
@@ -78,7 +78,7 @@ export default function Header() {
       {/* Social Links */}
       <div className="flex items-center gap-2 pl-4 border-l border-slate-800/50">
         <a
-          href="https://linkedin.com"
+          href="https://linkedin.com/in/villaarreola"
           target="_blank"
           rel="noopener noreferrer"
           className="
@@ -92,7 +92,7 @@ export default function Header() {
           <Linkedin size={18} />
         </a>
         <a
-          href="https://github.com"
+          href="https://github.com/villaarreola"
           target="_blank"
           rel="noopener noreferrer"
           className="

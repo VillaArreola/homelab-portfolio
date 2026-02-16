@@ -100,14 +100,13 @@ export default function ChatWithInfra({ infrastructureData }: ChatWithInfraProps
 
       const systemPrompt = buildSystemPrompt(contextToSend);
       
-      const response = await fetch("http://localhost:4000/v1/chat/completions", {
+      // Usar API route proxy para proteger keys
+      const response = await fetch("/api/chat", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer sk-mi-clave-windows`,
         },
         body: JSON.stringify({
-          model: "qwen3-vl:Cloud",
           messages: [
             {
               role: "system",
@@ -122,8 +121,6 @@ export default function ChatWithInfra({ infrastructureData }: ChatWithInfraProps
               content: currentInput,
             },
           ],
-          temperature: 0.7,
-          max_tokens: 500,
         }),
       });
 
