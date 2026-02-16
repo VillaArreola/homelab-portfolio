@@ -2,6 +2,15 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { Send, Bot, User, Loader2, AlertCircle, ChevronDown, ChevronUp } from "lucide-react";
+import { 
+  getRelevantContext, 
+  needsFullContext, 
+  getFullInfrastructureJSON,
+  buildSystemPrompt,
+  getInfrastructureSummary,
+  detectJailbreakAttempt
+} from "@/lib/chatHelpers";
+import { InfraItem } from "@/lib/infraTypes";
 
 interface Message {
   role: "user" | "assistant";
@@ -10,7 +19,7 @@ interface Message {
 }
 
 interface ChatWithInfraProps {
-  infrastructureData: any;
+  infrastructureData: InfraItem[];
 }
 
 export default function ChatWithInfra({ infrastructureData }: ChatWithInfraProps) {
@@ -37,9 +46,31 @@ export default function ChatWithInfra({ infrastructureData }: ChatWithInfraProps
   const sendMessage = async () => {
     if (!input.trim() || isLoading) return;
 
+    const currentInput = input.trim();
+    
+    // 🛡️ GUARDRAIL: Detectar intentos de jailbreak
+    const jailbreakCheck = detectJailbreakAttempt(currentInput);
+    if (jailbreakCheck.isJailbreak) {
+      const userMessage: Message = {
+        role: "user",
+        content: currentInput,
+        timestamp: getTimestamp(),
+      };
+      
+      const blockedMessage: Message = {
+        role: "assistant",
+        content: "🚨 Lo siento, solo puedo responder preguntas sobre la infraestructura del laboratorio. Pregúntame sobre nodos, servicios, VLANs, direcciones IP o la topología de red.\n\nEjemplos válidos:\n• ¿Qué VLANs están configuradas?\n• Lista los servicios activos\n• ¿Cuál es la IP de Proxmox?\n• Muéstrame la topología completa",
+        timestamp: getTimestamp(),
+      };
+      
+      setMessages((prev) => [...prev, userMessage, blockedMessage]);
+      setInput("");
+      return;
+    }
+
     const userMessage: Message = {
       role: "user",
-      content: input,
+      content: currentInput,
       timestamp: getTimestamp(),
     };
 
@@ -49,8 +80,25 @@ export default function ChatWithInfra({ infrastructureData }: ChatWithInfraProps
     setError(null);
 
     try {
-      // Preparar el contexto de la infraestructura
-      const infraContext = JSON.stringify(infrastructureData, null, 2);
+      // Optimización: Solo enviar contexto relevante según la pregunta
+      let contextToSend: string;
+      
+      if (needsFullContext(currentInput)) {
+        // Usuario pidió información completa
+        contextToSend = getFullInfrastructureJSON(infrastructureData);
+      } else {
+        // Extraer solo la información relevante
+        contextToSend = getRelevantContext(currentInput, infrastructureData);
+      }
+
+      // Si es el primer mensaje, agregar resumen general
+      const isFirstMessage = messages.length === 0;
+      if (isFirstMessage && !needsFullContext(currentInput)) {
+        const summary = getInfrastructureSummary(infrastructureData);
+        contextToSend = `${summary}\n\n${contextToSend}`;
+      }
+
+      const systemPrompt = buildSystemPrompt(contextToSend);
       
       const response = await fetch("http://localhost:4000/v1/chat/completions", {
         method: "POST",
@@ -63,11 +111,7 @@ export default function ChatWithInfra({ infrastructureData }: ChatWithInfraProps
           messages: [
             {
               role: "system",
-              content: `You are an expert infrastructure assistant. You have access to the following infrastructure topology data:
-
-${infraContext}
-
-Answer questions about this infrastructure clearly and concisely. Include relevant details like IPs, VLANs, services, and relationships between components.`,
+              content: systemPrompt,
             },
             ...messages.map((msg) => ({
               role: msg.role,
@@ -75,7 +119,7 @@ Answer questions about this infrastructure clearly and concisely. Include releva
             })),
             {
               role: "user",
-              content: input,
+              content: currentInput,
             },
           ],
           temperature: 0.7,
