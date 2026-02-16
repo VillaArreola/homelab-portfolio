@@ -1,6 +1,7 @@
 # 🏗️ Homelab Infrastructure Portfolio
 
 Interactive visualization and documentation of homelab network topology with AI-powered chat assistant.
+[https://lab.villaarreola.com](Lab.villaarreola.com)
 
 ![Next.js](https://img.shields.io/badge/Next.js-16.1-black?logo=next.js)
 ![React](https://img.shields.io/badge/React-19.2-blue?logo=react)
