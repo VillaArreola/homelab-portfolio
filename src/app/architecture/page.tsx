@@ -1,4 +1,4 @@
-import LabDiagram from "@/src/app/components/diagram/LabDiagram";
+import LabDiagram from "@/app/components/diagram/LabDiagram";
 
 export default function Architecture() {
   return (
