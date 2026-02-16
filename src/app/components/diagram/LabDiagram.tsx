@@ -23,6 +23,7 @@ import Toolbar from "../layout/Toolbar";
 import ChatWithInfra from "../chat/ChatWithInfra";
 import AdminLoginModal from "../modals/AdminLoginModal";
 import NodeEditorModal from "../modals/NodeEditorModal";
+import ConfirmDialog from "../modals/ConfirmDialog";
 import infraData from "@/data/infrastructure.json";
 import viewsData from "@/data/views.json";
 import { buildInfraTree } from "@/lib/buildTree";
@@ -62,6 +63,15 @@ function DiagramContent() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [isChatVisible, setIsChatVisible] = useState(false);
+  const [isCustomMode, setIsCustomMode] = useState(false);
+  
+  // Confirm Dialog states
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  }>({ isOpen: false, title: "", message: "", onConfirm: () => {} });
 
   // Node Editor states
   const [isAdmin, setIsAdmin] = useState(false);
@@ -134,12 +144,20 @@ function DiagramContent() {
   }, [currentTopology]);
 
   const handleSave = useCallback(() => {
-    const newLayout = saveLayout(nodes);
+    // Check if non-admin has reached 5 layouts limit
     const layouts = getSavedLayouts();
-    setSavedLayouts(layouts);
+    if (!isAdmin && layouts.length >= 5) {
+      setSaveMessage("⚠ Non-admin users can save up to 5 layouts");
+      setTimeout(() => setSaveMessage(""), 3000);
+      return;
+    }
+    
+    const newLayout = saveLayout(nodes);
+    const updatedLayouts = getSavedLayouts();
+    setSavedLayouts(updatedLayouts);
     setSaveMessage(`✓ ${newLayout.name} saved`);
     setTimeout(() => setSaveMessage(""), 2000);
-  }, [nodes]);
+  }, [nodes, isAdmin]);
 
   // Cargar un layout específico
   const handleLoadLayout = useCallback(
@@ -180,8 +198,53 @@ function DiagramContent() {
     setEdges(flowData.edges);
     setActiveView("full");
     setLayoutMode("auto");
+    setIsCustomMode(false); // Salir del modo custom
     setSaveMessage("✓ All layouts cleared");
     setTimeout(() => setSaveMessage(""), 2000);
+  }, [setNodes, setEdges]);
+
+  // New Canvas - Crear canvas vacío para que visitantes experimenten
+  const handleNewCanvas = useCallback(() => {
+    setConfirmDialog({
+      isOpen: true,
+      title: "Start New Canvas?",
+      message: "This will clear the current diagram and let you create your own. You can restore the original anytime.",
+      onConfirm: () => {
+        setIsCustomMode(true);
+        setCurrentTopology([]);
+        setAllNodes([]);
+        setAllEdges([]);
+        setNodes([]);
+        setEdges([]);
+        setActiveView("full");
+        setSaveMessage("✓ New canvas created - Add nodes to start");
+        setTimeout(() => setSaveMessage(""), 3000);
+        setConfirmDialog({ isOpen: false, title: "", message: "", onConfirm: () => {} });
+      },
+    });
+  }, [setNodes, setEdges]);
+
+  // Reset Diagram - Volver al diagrama original desde custom mode
+  const handleResetDiagram = useCallback(() => {
+    setConfirmDialog({
+      isOpen: true,
+      title: "Restore Original Diagram?",
+      message: "This will discard your custom changes and restore the original lab structure.",
+      onConfirm: () => {
+        setIsCustomMode(false);
+        setCurrentTopology([...infraData]);
+        const tree = buildInfraTree(infraData);
+        const flowData = treeToReactFlow(tree);
+        setAllNodes(flowData.nodes);
+        setAllEdges(flowData.edges);
+        setNodes(flowData.nodes);
+        setEdges(flowData.edges);
+        setActiveView("full");
+        setSaveMessage("✓ Original diagram restored");
+        setTimeout(() => setSaveMessage(""), 2000);
+        setConfirmDialog({ isOpen: false, title: "", message: "", onConfirm: () => {} });
+      },
+    });
   }, [setNodes, setEdges]);
 
   // Cambiar vista
@@ -505,6 +568,9 @@ function DiagramContent() {
           onSearch={handleSearch}
           isAdmin={isAdmin}
           onAdminLogin={handleAdminLogin}
+          onNewCanvas={handleNewCanvas}
+          onResetDiagram={handleResetDiagram}
+          isCustomMode={isCustomMode}
           onAddNode={handleAddNode}
           onExportTopology={handleExportTopology}
           onExportPNG={handleExportPNG}
@@ -643,6 +709,18 @@ function DiagramContent() {
         allNodes={currentTopology}
         onClose={() => setIsNodeEditorOpen(false)}
         onSave={handleSaveNode}
+      />
+
+      {/* Confirm Dialog */}
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        title={confirmDialog.title}
+        message={confirmDialog.message}
+        confirmText="Continue"
+        cancelText="Cancel"
+        variant="warning"
+        onConfirm={confirmDialog.onConfirm}
+        onCancel={() => setConfirmDialog({ isOpen: false, title: "", message: "", onConfirm: () => {} })}
       />
     </div>
   );

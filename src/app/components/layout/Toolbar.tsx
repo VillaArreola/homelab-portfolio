@@ -51,6 +51,9 @@ interface ToolbarProps {
   onExportMermaid: () => void;
   onImportTopology: () => void;
   onSavePermanently: () => void;
+  onNewCanvas: () => void;
+  onResetDiagram: () => void;
+  isCustomMode: boolean;
 }
 
 export default function Toolbar({
@@ -69,6 +72,9 @@ export default function Toolbar({
   onExportMermaid,
   onImportTopology,
   onSavePermanently,
+  onNewCanvas,
+  onResetDiagram,
+  isCustomMode,
   onLoadLayout,
   onDeleteLayout,
   onZoomIn,
@@ -185,6 +191,34 @@ export default function Toolbar({
         </div>
         
         <div className="flex flex-col gap-1">
+          {/* New Canvas Button */}
+          <button
+            onClick={onNewCanvas}
+            className="
+              flex items-center gap-2 md:gap-3 p-2 rounded-lg w-full transition-all
+              text-slate-400 hover:bg-emerald-500/10 hover:text-emerald-400
+              border border-slate-700 hover:border-emerald-500/30
+            "
+          >
+            <Layout size={18} />
+            <span className="text-xs md:text-sm font-medium">New Canvas</span>
+          </button>
+
+          {/* Reset Diagram Button (only show in custom mode) */}
+          {isCustomMode && (
+            <button
+              onClick={onResetDiagram}
+              className="
+                flex items-center gap-2 md:gap-3 p-2 rounded-lg w-full transition-all
+                text-slate-400 hover:bg-orange-500/10 hover:text-orange-400
+                border border-slate-700 hover:border-orange-500/30
+              "
+            >
+              <RotateCcw size={18} />
+              <span className="text-xs md:text-sm font-medium">Reset Diagram</span>
+            </button>
+          )}
+
           {/* Add Node Button */}
           <button
             onClick={onAddNode}
@@ -194,7 +228,9 @@ export default function Toolbar({
             "
           >
             <Plus size={18} />
-            <span className="text-xs md:text-sm font-medium">Add Node</span>
+            <span className="text-xs md:text-sm font-medium">
+              Add Node
+            </span>
           </button>
 
           {/* Import Topology */}

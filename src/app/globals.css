@@ -238,3 +238,34 @@
   animation: slide-up 0.4s ease-out forwards;
 }
 
+/* Custom scrollbar styles for Chrome/WebKit */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.4); /* slate-900 with transparency */
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(71, 85, 105, 0.5); /* slate-600 with transparency */
+  border-radius: 4px;
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 116, 139, 0.7); /* slate-500 with more opacity */
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: rgba(148, 163, 184, 0.8); /* slate-400 */
+}
+
+/* Thin scrollbar for Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(71, 85, 105, 0.5) rgba(15, 23, 42, 0.4);
+}
+
