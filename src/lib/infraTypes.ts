@@ -25,6 +25,8 @@ export type InfraItem = {
     owner?: string;
     version?: string;
   };
+  icon?: string;             // Registry key, e.g. "SiDocker"
+  iconColor?: string;        // Hex color override, e.g. "#2496ED"
 };
 
 export type InfraTreeNode = InfraItem & {

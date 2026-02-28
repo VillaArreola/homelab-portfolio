@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import { X, Plus, Edit2, AlertCircle } from "lucide-react";
 import { InfraItem } from "@/lib/infraTypes";
+import IconPicker from "@/app/components/ui/IconPicker";
+import { ICON_REGISTRY } from "@/lib/iconRegistry";
 
 type Props = {
   isOpen: boolean;
@@ -33,6 +35,8 @@ export default function NodeEditorModal({ isOpen, mode, node, allNodes, onClose,
     tags: undefined,
     links: undefined,
     metadata: undefined,
+    icon: undefined,
+    iconColor: undefined,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -60,6 +64,8 @@ export default function NodeEditorModal({ isOpen, mode, node, allNodes, onClose,
           tags: undefined,
           links: undefined,
           metadata: undefined,
+          icon: undefined,
+          iconColor: undefined,
         });
       }
       setErrors({});
@@ -118,6 +124,8 @@ export default function NodeEditorModal({ isOpen, mode, node, allNodes, onClose,
       tags: undefined,
       links: undefined,
       metadata: undefined,
+      icon: undefined,
+      iconColor: undefined,
     });
     setErrors({});
     onClose();
@@ -539,7 +547,7 @@ export default function NodeEditorModal({ isOpen, mode, node, allNodes, onClose,
                 placeholder="Quick notes, troubleshooting tips, known issues..."
                 rows={4}
                 className="
-                  w-full px-4 py-2.5 
+                  w-full px-4 py-2.5
                   bg-slate-800/50 border border-slate-700
                   rounded-lg text-sm text-slate-200
                   placeholder:text-slate-500
@@ -547,6 +555,64 @@ export default function NodeEditorModal({ isOpen, mode, node, allNodes, onClose,
                   transition-all font-mono resize-y
                 "
               />
+            </div>
+          </div>
+
+          {/* Appearance */}
+          <div className="space-y-4 pt-4 border-t border-slate-800">
+            <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">Appearance</h3>
+
+            {/* Icon Picker */}
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-1">Custom Icon</label>
+              <p className="text-xs text-slate-500 mb-3">
+                Leave empty to use the default icon for this node type.
+              </p>
+              <IconPicker
+                value={formData.icon}
+                onChange={(key) => {
+                  if (key) {
+                    const entry = ICON_REGISTRY.find((e) => e.key === key);
+                    setFormData((prev) => ({
+                      ...prev,
+                      icon: key,
+                      iconColor: prev.iconColor || entry?.brandColor,
+                    }));
+                  } else {
+                    setFormData((prev) => ({ ...prev, icon: undefined }));
+                  }
+                }}
+              />
+            </div>
+
+            {/* Color override */}
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-1">Icon Color</label>
+              <div className="flex items-center gap-3">
+                <input
+                  type="color"
+                  value={formData.iconColor || "#64748b"}
+                  onChange={(e) => updateField("iconColor", e.target.value)}
+                  className="w-10 h-10 rounded-lg cursor-pointer bg-transparent border-0 p-0"
+                />
+                <input
+                  type="text"
+                  value={formData.iconColor || ""}
+                  onChange={(e) => updateField("iconColor", e.target.value)}
+                  placeholder="#64748b (leave empty for default)"
+                  maxLength={7}
+                  className="flex-1 px-4 py-2.5 bg-slate-800/50 border border-slate-700 rounded-lg text-sm text-slate-200 font-mono placeholder:text-slate-500 focus:outline-none focus:border-blue-500/50"
+                />
+                {formData.iconColor && (
+                  <button
+                    type="button"
+                    onClick={() => updateField("iconColor", undefined)}
+                    className="p-2 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-slate-200 transition-colors"
+                  >
+                    <X size={16} />
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </form>

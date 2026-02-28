@@ -1,6 +1,7 @@
 import { InfraTreeNode } from "@/lib/infraTypes";
 import statusMap from "@/data/status.json";
 import connections from "@/data/connections.json";
+import { getRegistryIcon } from "@/lib/iconRegistry";
 
 import {
   Cloud,
@@ -62,7 +63,13 @@ const iconColors: Record<string, string> = {
 // ================================
 // ICONOS POR TIPO
 // ================================
-function getIcon(type: string, id: string) {
+function getIcon(type: string, id: string, customIconKey?: string) {
+  // Custom icon from registry takes priority
+  if (customIconKey) {
+    const custom = getRegistryIcon(customIconKey);
+    if (custom) return custom;
+  }
+
   // Iconos específicos por ID
   if (id === "laptop") return createElement(Laptop, { size: 24, strokeWidth: 2 });
   if (id === "oci" || type === "cloud-host") return createElement(Cloud, { size: 24, strokeWidth: 2 });
@@ -71,7 +78,7 @@ function getIcon(type: string, id: string) {
   if (id.includes("proxmox")) return createElement(Server, { size: 24, strokeWidth: 2 });
   if (id.includes("docker") || type === "container-runtime") return createElement(Container, { size: 24, strokeWidth: 2 });
   if (id.includes("pfsense")) return createElement(Shield, { size: 24, strokeWidth: 2 });
-  
+
   // Iconos por tipo
   const iconMap: Record<string, any> = {
     host: Laptop,
@@ -90,7 +97,8 @@ function getIcon(type: string, id: string) {
 // ================================
 // Obtener color del icono
 // ================================
-function getIconColor(type: string, id: string): string {
+function getIconColor(type: string, id: string, customColor?: string): string {
+  if (customColor) return customColor;
   // Primero intenta por ID específico
   if (iconColors[id]) return iconColors[id];
   // Luego por tipo
@@ -135,8 +143,8 @@ export function treeToReactFlow(roots: InfraTreeNode[]) {
         data: {
           label: node.name,
           role: node.purpose,
-          color: getIconColor(node.type, node.id),
-          icon: getIcon(node.type, node.id),
+          color: getIconColor(node.type, node.id, node.iconColor),
+          icon: getIcon(node.type, node.id, node.icon),
           status: getStatus(node.id),
           parent: parentId, // Agregar referencia al padre
           ip: node.ip,
@@ -173,8 +181,8 @@ export function treeToReactFlow(roots: InfraTreeNode[]) {
       data: {
         label: node.name,
         role: node.purpose,
-        color: getIconColor(node.type, node.id),
-        icon: getIcon(node.type, node.id),
+        color: getIconColor(node.type, node.id, node.iconColor),
+        icon: getIcon(node.type, node.id, node.icon),
         status: getStatus(node.id),
         parent: parentId, // Agregar referencia al padre
         ip: node.ip,
