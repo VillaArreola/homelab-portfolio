@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import ReactFlow, {
   Background,
   MiniMap,
@@ -172,6 +172,12 @@ function DiagramContent() {
       setIsPanelOpen(true);
     }
   }, [currentTopology]);
+
+  const filteredTopology = useMemo(() => {
+    if (activeView === "full") return currentTopology;
+    const visibleIds = new Set(nodes.map((n) => n.id));
+    return currentTopology.filter((item) => visibleIds.has(item.id));
+  }, [activeView, nodes, currentTopology]);
 
   // Handle row click in table views
   const handleTableNodeSelect = useCallback((item: InfraItem) => {
@@ -716,14 +722,14 @@ function DiagramContent() {
         {/* Hardware Table */}
         {mainView === "hardware" && (
           <div className="absolute inset-0 overflow-auto bg-slate-950">
-            <HardwareTable topology={currentTopology} onSelectNode={handleTableNodeSelect} />
+            <HardwareTable topology={filteredTopology} onSelectNode={handleTableNodeSelect} />
           </div>
         )}
 
         {/* Services Table */}
         {mainView === "services" && (
           <div className="absolute inset-0 overflow-auto bg-slate-950">
-            <ServicesTable topology={currentTopology} onSelectNode={handleTableNodeSelect} />
+            <ServicesTable topology={filteredTopology} onSelectNode={handleTableNodeSelect} />
           </div>
         )}
 
