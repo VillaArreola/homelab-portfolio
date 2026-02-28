@@ -1,12 +1,12 @@
 "use client";
 
 import React, { useState } from "react";
-import { 
-  Save, 
-  RotateCcw, 
-  Eye, 
-  Layout, 
-  Trash2, 
+import {
+  Save,
+  RotateCcw,
+  Eye,
+  Layout,
+  Trash2,
   Clock,
   Shield,
   Workflow,
@@ -18,16 +18,52 @@ import {
   Search,
   X as XIcon,
   Plus,
+  ChevronDown,
+  ChevronUp,
   Download,
   Upload,
   Lock,
   Unlock,
   Database,
   Image,
-  FileCode
+  FileCode,
+  Cloud,
+  Server,
+  HardDrive,
+  Container,
+  Monitor,
+  Terminal,
+  Network,
+  Laptop,
+  Wifi,
+  Grid3x3
 } from "lucide-react";
 import viewsData from "@/data/views.json";
 import { SavedLayout } from "@/lib/layoutStorage";
+
+type NodeTemplate = {
+  id: string;
+  type: string;
+  name: string;
+  icon: React.ReactNode;
+  color: string;
+  description: string;
+};
+
+const nodeTemplates: NodeTemplate[] = [
+  { id: "laptop",    type: "host",              name: "Laptop",    icon: <Laptop    size={18} />, color: "#60a5fa", description: "Local workstation" },
+  { id: "cloud",     type: "cloud-host",        name: "Cloud",     icon: <Cloud     size={18} />, color: "#f97316", description: "Cloud instance" },
+  { id: "server",    type: "hypervisor",        name: "Server",    icon: <Server    size={18} />, color: "#ef4444", description: "Physical server" },
+  { id: "vm",        type: "vm",                name: "VM",        icon: <Monitor   size={18} />, color: "#64748b", description: "Virtual machine" },
+  { id: "container", type: "container-runtime", name: "Container", icon: <Container size={18} />, color: "#3b82f6", description: "Docker/container" },
+  { id: "service",   type: "service",           name: "Service",   icon: <Network   size={18} />, color: "#10b981", description: "Web service" },
+  { id: "database",  type: "database",          name: "Database",  icon: <Database  size={18} />, color: "#a855f7", description: "Database server" },
+  { id: "firewall",  type: "firewall",          name: "Firewall",  icon: <Shield    size={18} />, color: "#10b981", description: "Network firewall" },
+  { id: "storage",   type: "storage",           name: "Storage",   icon: <HardDrive size={18} />, color: "#64748b", description: "Storage system" },
+  { id: "terminal",  type: "terminal",          name: "Terminal",  icon: <Terminal  size={18} />, color: "#a855f7", description: "Command line" },
+  { id: "vpn",       type: "vpn",               name: "VPN",       icon: <Lock      size={18} />, color: "#f59e0b", description: "VPN gateway" },
+  { id: "router",    type: "router",            name: "Router",    icon: <Wifi      size={18} />, color: "#22d3ee", description: "Network router" },
+];
 
 interface ToolbarProps {
   activeView: string;
@@ -83,6 +119,7 @@ export default function Toolbar({
   onSearch,
 }: ToolbarProps) {
   const [searchQuery, setSearchQuery] = useState("");
+  const [paletteExpanded, setPaletteExpanded] = useState(false);
 
   const views = viewsData as Record<
     string,
@@ -219,19 +256,77 @@ export default function Toolbar({
             </button>
           )}
 
-          {/* Add Node Button */}
-          <button
-            onClick={onAddNode}
-            className="
-              flex items-center gap-2 md:gap-3 p-2 rounded-lg w-full transition-all
-              text-slate-400 hover:bg-blue-500/10 hover:text-blue-400
-            "
-          >
-            <Plus size={18} />
-            <span className="text-xs md:text-sm font-medium">
-              Add Node
-            </span>
-          </button>
+          {/* Add Node + Expandable Palette */}
+          <div className="flex flex-col gap-1">
+            {/* Manual Add Node Button */}
+            <button
+              onClick={onAddNode}
+              className="
+                flex items-center gap-2 p-2 rounded-lg transition-all w-full
+                text-slate-400 hover:bg-blue-500/10 hover:text-blue-400
+                border border-slate-700 hover:border-blue-500/30
+              "
+              title="Add node manually"
+            >
+              <Plus size={18} />
+              <span className="text-xs md:text-sm font-medium">Add Node</span>
+            </button>
+            
+            {/* Drag & Drop Palette Toggle */}
+            <button
+              onClick={() => setPaletteExpanded((prev) => !prev)}
+              className={
+                `flex items-center gap-2 p-2 rounded-lg transition-all w-full
+                ${paletteExpanded 
+                  ? 'bg-blue-500/20 text-blue-400 border border-blue-500/50' 
+                  : 'text-slate-400 hover:bg-blue-500/10 hover:text-blue-400 border border-slate-700 hover:border-blue-500/30'
+                }`
+              }
+              title={paletteExpanded ? "Hide drag & drop palette" : "Show drag & drop palette"}
+            >
+              <Grid3x3 size={18} />
+              <span className="text-xs md:text-sm font-medium flex-1 text-left">
+                Drag Icons
+              </span>
+              {paletteExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+            </button>
+
+            {/* Inline draggable palette */}
+            {paletteExpanded && (
+              <div className="grid grid-cols-2 gap-1.5 px-1 py-2">
+                {nodeTemplates.map((template) => (
+                  <div
+                    key={template.id}
+                    draggable
+                    onDragStart={(e) => {
+                      e.dataTransfer.setData(
+                        "application/reactflow",
+                        JSON.stringify(template)
+                      );
+                      e.dataTransfer.effectAllowed = "move";
+                    }}
+                    className="
+                      group cursor-move flex flex-col items-center gap-1 p-2
+                      rounded-lg border border-slate-700/60
+                      hover:border-blue-500/50 hover:bg-blue-500/5
+                      transition-all select-none
+                    "
+                    title={template.description}
+                  >
+                    <div
+                      style={{ color: template.color }}
+                      className="group-hover:scale-110 transition-transform"
+                    >
+                      {template.icon}
+                    </div>
+                    <span className="text-[10px] text-slate-400 font-medium text-center leading-tight">
+                      {template.name}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
 
           {/* Import Topology */}
           <button

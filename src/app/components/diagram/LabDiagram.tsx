@@ -12,6 +12,9 @@ import ReactFlow, {
   ReactFlowProvider,
   getNodesBounds,
   getViewportForBounds,
+  addEdge,
+  Connection,
+  ConnectionMode,
 } from "reactflow";
 import "reactflow/dist/style.css";
 import { Menu, X, MessageSquare } from "lucide-react";
@@ -64,7 +67,7 @@ function DiagramContent() {
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [isChatVisible, setIsChatVisible] = useState(false);
   const [isCustomMode, setIsCustomMode] = useState(false);
-  
+
   // Confirm Dialog states
   const [confirmDialog, setConfirmDialog] = useState<{
     isOpen: boolean;
@@ -81,6 +84,7 @@ function DiagramContent() {
   const [nodeToEdit, setNodeToEdit] = useState<InfraItem | undefined>(undefined);
   const [currentTopology, setCurrentTopology] = useState<InfraItem[]>([...infraData]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const userEdgesRef = useRef<Edge[]>([]);
 
   // Check admin status on mount
   useEffect(() => {
@@ -98,6 +102,28 @@ function DiagramContent() {
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialFlowData.nodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialFlowData.edges);
+
+  // Sincronizar nodos y edges cuando cambia la topología
+  useEffect(() => {
+    const tree = buildInfraTree(currentTopology);
+    const flowData = treeToReactFlow(tree);
+    
+    // Preservar posiciones de nodos existentes
+    const updatedNodes = flowData.nodes.map(newNode => {
+      const existingNode = allNodes.find(n => n.id === newNode.id);
+      return existingNode 
+        ? { ...newNode, position: existingNode.position }
+        : newNode;
+    });
+    
+    // Combinar edges de la topología con edges creados manualmente
+    const combinedEdges = [...flowData.edges, ...userEdgesRef.current];
+    
+    setAllNodes(updatedNodes);
+    setAllEdges(combinedEdges);
+    setNodes(updatedNodes);
+    setEdges(combinedEdges);
+  }, [currentTopology, setNodes, setEdges]);
 
   // Cargar layout guardado al montar
   useEffect(() => {
@@ -210,6 +236,7 @@ function DiagramContent() {
       title: "Start New Canvas?",
       message: "This will clear the current diagram and let you create your own. You can restore the original anytime.",
       onConfirm: () => {
+        userEdgesRef.current = [];
         setIsCustomMode(true);
         setCurrentTopology([]);
         setAllNodes([]);
@@ -231,6 +258,7 @@ function DiagramContent() {
       title: "Restore Original Diagram?",
       message: "This will discard your custom changes and restore the original lab structure.",
       onConfirm: () => {
+        userEdgesRef.current = [];
         setIsCustomMode(false);
         setCurrentTopology([...infraData]);
         const tree = buildInfraTree(infraData);
@@ -330,6 +358,59 @@ function DiagramContent() {
     setEditorMode("add");
     setNodeToEdit(undefined);
     setIsNodeEditorOpen(true);
+  }, []);
+
+  // Interactive connection handler
+  const onConnect = useCallback((params: Connection) => {
+    const newEdge: Edge = {
+      ...params,
+      id: `user-${params.source}-${params.target}-${Date.now()}`,
+      style: { stroke: "#a855f7", strokeWidth: 2 },
+      animated: false,
+    };
+    userEdgesRef.current = [...userEdgesRef.current, newEdge];
+    setEdges((prev) => addEdge(newEdge, prev));
+    setAllEdges((prev) => addEdge(newEdge, prev));
+  }, [setEdges]);
+
+  // Handle node drop from palette
+  const onDrop = useCallback(
+    (event: React.DragEvent) => {
+      event.preventDefault();
+      
+      const templateData = event.dataTransfer.getData("application/reactflow");
+      if (!templateData) return;
+      
+      const template = JSON.parse(templateData);
+      const reactFlowBounds = event.currentTarget.getBoundingClientRect();
+      const position = reactFlowInstance.project({
+        x: event.clientX - reactFlowBounds.left,
+        y: event.clientY - reactFlowBounds.top,
+      });
+
+      // Generate unique ID
+      const timestamp = Date.now();
+      const nodeId = `${template.id}-${timestamp}`;
+      
+      // Create node directly with default values
+      const newNode: InfraItem = {
+        id: nodeId,
+        name: `${template.name} ${timestamp}`,
+        type: template.type,
+      };
+      
+      // Add to topology immediately
+      setCurrentTopology(prev => [...prev, newNode]);
+      
+      setSaveMessage(`✓ ${template.name} added - Click to edit`);
+      setTimeout(() => setSaveMessage(""), 3000);
+    },
+    [reactFlowInstance]
+  );
+
+  const onDragOver = useCallback((event: React.DragEvent) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
   }, []);
 
   // Edit node (from panel)
@@ -515,14 +596,15 @@ function DiagramContent() {
     }
   }, [isAdmin, currentTopology]);
 
-  // Update the tree when topology changes
+  // Update the tree when topology changes, preserving user-drawn edges
   useEffect(() => {
     const tree = buildInfraTree(currentTopology);
     const flowData = treeToReactFlow(tree);
+    const mergedEdges = [...flowData.edges, ...userEdgesRef.current];
     setAllNodes(flowData.nodes);
-    setAllEdges(flowData.edges);
+    setAllEdges(mergedEdges);
     setNodes(flowData.nodes);
-    setEdges(flowData.edges);
+    setEdges(mergedEdges);
   }, [currentTopology, setNodes, setEdges]);
 
   return (
@@ -590,6 +672,11 @@ function DiagramContent() {
           onEdgesChange={onEdgesChange}
           nodesDraggable={layoutMode === "manual"}
           onNodeClick={handleNodeClick}
+          onDrop={onDrop}
+          onDragOver={onDragOver}
+          onConnect={onConnect}
+          connectionMode={ConnectionMode.Loose}
+          deleteKeyCode="Delete"
           fitView
         >
           <MiniMap 

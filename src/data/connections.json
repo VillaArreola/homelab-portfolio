@@ -19,5 +19,14 @@
     "type": "ssh",
     "label": "Encrypted Tunnel Active",
     "description": "SSH connection to Ubuntu server"
+  },
+  {
+    "from": "docker-oci",
+    "to": "proxmox",
+    "type": "ssh",
+    "label": "Encrypted Tunnel Active",
+    "description": "SSH connection to Proxmox host for container management"
   }
+
+
 ]
