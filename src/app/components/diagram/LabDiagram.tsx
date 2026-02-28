@@ -27,6 +27,9 @@ import ChatWithInfra from "../chat/ChatWithInfra";
 import AdminLoginModal from "../modals/AdminLoginModal";
 import NodeEditorModal from "../modals/NodeEditorModal";
 import ConfirmDialog from "../modals/ConfirmDialog";
+import ViewModeToggle, { MainView } from "../views/ViewModeToggle";
+import HardwareTable from "../views/HardwareTable";
+import ServicesTable from "../views/ServicesTable";
 import infraData from "@/data/infrastructure.json";
 import viewsData from "@/data/views.json";
 import { buildInfraTree } from "@/lib/buildTree";
@@ -67,6 +70,7 @@ function DiagramContent() {
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [isChatVisible, setIsChatVisible] = useState(false);
   const [isCustomMode, setIsCustomMode] = useState(false);
+  const [mainView, setMainView] = useState<MainView>("diagram");
 
   // Confirm Dialog states
   const [confirmDialog, setConfirmDialog] = useState<{
@@ -168,6 +172,12 @@ function DiagramContent() {
       setIsPanelOpen(true);
     }
   }, [currentTopology]);
+
+  // Handle row click in table views
+  const handleTableNodeSelect = useCallback((item: InfraItem) => {
+    setSelected(item);
+    setIsPanelOpen(true);
+  }, []);
 
   const handleSave = useCallback(() => {
     // Check if non-admin has reached 5 layouts limit
@@ -663,38 +673,59 @@ function DiagramContent() {
       </div>
 
       {/* ===== DIAGRAM AREA ===== */}
-      <div className="flex-1 relative bg-slate-950">
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          nodeTypes={nodeTypes}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          nodesDraggable={layoutMode === "manual"}
-          onNodeClick={handleNodeClick}
-          onDrop={onDrop}
-          onDragOver={onDragOver}
-          onConnect={onConnect}
-          connectionMode={ConnectionMode.Loose}
-          deleteKeyCode="Delete"
-          fitView
-        >
-          <MiniMap 
-            nodeStrokeWidth={2}
-            zoomable
-            pannable
-            maskColor="rgba(15, 23, 42, 0.4)"
-            style={{
-              borderRadius: '1rem',
-            }}
-            className="hidden md:block"
-          />
-          <Background 
-            gap={24}
-            size={0}
-            color="transparent"
-          />
-        </ReactFlow>
+      <div className="flex-1 relative bg-slate-950 overflow-hidden">
+        {/* View mode toggle - always visible, floating at top-center */}
+        <ViewModeToggle value={mainView} onChange={setMainView} />
+
+        {/* React Flow canvas - kept mounted to preserve positions, hidden when inactive */}
+        <div className={`absolute inset-0 ${mainView !== "diagram" ? "hidden" : ""}`}>
+          <ReactFlow
+            nodes={nodes}
+            edges={edges}
+            nodeTypes={nodeTypes}
+            onNodesChange={onNodesChange}
+            onEdgesChange={onEdgesChange}
+            nodesDraggable={layoutMode === "manual"}
+            onNodeClick={handleNodeClick}
+            onDrop={onDrop}
+            onDragOver={onDragOver}
+            onConnect={onConnect}
+            connectionMode={ConnectionMode.Loose}
+            deleteKeyCode="Delete"
+            fitView
+          >
+            <MiniMap
+              nodeStrokeWidth={2}
+              zoomable
+              pannable
+              maskColor="rgba(15, 23, 42, 0.4)"
+              style={{
+                borderRadius: '1rem',
+              }}
+              className="hidden md:block"
+            />
+            <Background
+              gap={24}
+              size={0}
+              color="transparent"
+            />
+          </ReactFlow>
+          <Legend />
+        </div>
+
+        {/* Hardware Table */}
+        {mainView === "hardware" && (
+          <div className="absolute inset-0 overflow-auto bg-slate-950">
+            <HardwareTable topology={currentTopology} onSelectNode={handleTableNodeSelect} />
+          </div>
+        )}
+
+        {/* Services Table */}
+        {mainView === "services" && (
+          <div className="absolute inset-0 overflow-auto bg-slate-950">
+            <ServicesTable topology={currentTopology} onSelectNode={handleTableNodeSelect} />
+          </div>
+        )}
 
         {/* Chat flotante - posicionado al lado del MiniMap */}
         <div className="absolute bottom-4 left-4 z-40">
@@ -736,8 +767,6 @@ function DiagramContent() {
             {saveMessage}
           </div>
         )}
-
-        <Legend />
       </div>
 
       {/* ===== SIDE PANEL ===== */}
