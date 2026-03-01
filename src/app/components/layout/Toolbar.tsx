@@ -40,10 +40,36 @@ import {
   Sparkles,
   ChevronRight,
   Copy,
-  Clipboard
+  Clipboard,
+  // Security icons
+  Fingerprint,
+  Key,
+  ShieldAlert,
+  ShieldCheck,
+  UserCheck,
+  ScanFace,
+  // Devices
+  Smartphone,
+  Tablet,
+  Watch,
+  Printer,
+  Webcam,
+  // Coding & Development
+  Code2,
+  GitBranch,
+  Webhook,
+  Package,
+  Bug,
+  TestTube,
+  Binary,
+  // AI & ML
+  Brain,
+  Bot,
+  Cpu,
 } from "lucide-react";
 import viewsData from "@/data/views.json";
 import { SavedLayout } from "@/lib/layoutStorage";
+import { BgColor, BgPattern } from "../diagram/LabDiagram";
 
 type NodeTemplate = {
   id: string;
@@ -55,18 +81,49 @@ type NodeTemplate = {
 };
 
 const nodeTemplates: NodeTemplate[] = [
+  // Infrastructure
   { id: "laptop",    type: "host",              name: "Laptop",    icon: <Laptop    size={18} />, color: "#60a5fa", description: "Local workstation" },
   { id: "cloud",     type: "cloud-host",        name: "Cloud",     icon: <Cloud     size={18} />, color: "#f97316", description: "Cloud instance" },
   { id: "server",    type: "hypervisor",        name: "Server",    icon: <Server    size={18} />, color: "#ef4444", description: "Physical server" },
   { id: "vm",        type: "vm",                name: "VM",        icon: <Monitor   size={18} />, color: "#64748b", description: "Virtual machine" },
   { id: "container", type: "container-runtime", name: "Container", icon: <Container size={18} />, color: "#3b82f6", description: "Docker/container" },
+  { id: "storage",   type: "storage",           name: "Storage",   icon: <HardDrive size={18} />, color: "#64748b", description: "Storage system" },
+  
+  // Services
   { id: "service",   type: "service",           name: "Service",   icon: <Network   size={18} />, color: "#10b981", description: "Web service" },
   { id: "database",  type: "database",          name: "Database",  icon: <Database  size={18} />, color: "#a855f7", description: "Database server" },
-  { id: "firewall",  type: "firewall",          name: "Firewall",  icon: <Shield    size={18} />, color: "#10b981", description: "Network firewall" },
-  { id: "storage",   type: "storage",           name: "Storage",   icon: <HardDrive size={18} />, color: "#64748b", description: "Storage system" },
+  { id: "api",       type: "api",               name: "API",       icon: <Webhook   size={18} />, color: "#06b6d4", description: "REST API" },
   { id: "terminal",  type: "terminal",          name: "Terminal",  icon: <Terminal  size={18} />, color: "#a855f7", description: "Command line" },
-  { id: "vpn",       type: "vpn",               name: "VPN",       icon: <Lock      size={18} />, color: "#f59e0b", description: "VPN gateway" },
-  { id: "router",    type: "router",            name: "Router",    icon: <Wifi      size={18} />, color: "#22d3ee", description: "Network router" },
+  
+  // Security
+  { id: "firewall",  type: "firewall",          name: "Firewall",  icon: <Shield        size={18} />, color: "#10b981", description: "Network firewall" },
+  { id: "vpn",       type: "vpn",               name: "VPN",       icon: <Lock          size={18} />, color: "#f59e0b", description: "VPN gateway" },
+  { id: "security",  type: "security",          name: "Security",  icon: <ShieldAlert   size={18} />, color: "#ef4444", description: "Security system" },
+  { id: "auth",      type: "authentication",    name: "Auth",      icon: <UserCheck     size={18} />, color: "#8b5cf6", description: "Authentication" },
+  { id: "scanner",   type: "scanner",           name: "Scanner",   icon: <ScanFace      size={18} />, color: "#ec4899", description: "Vulnerability scanner" },
+  { id: "ids",       type: "ids",               name: "IDS/IPS",   icon: <ShieldCheck   size={18} />, color: "#f43f5e", description: "Intrusion detection" },
+  
+  // Devices
+  { id: "smartphone", type: "smartphone",       name: "Phone",     icon: <Smartphone size={18} />, color: "#06b6d4", description: "Mobile device" },
+  { id: "tablet",     type: "tablet",           name: "Tablet",    icon: <Tablet     size={18} />, color: "#3b82f6", description: "Tablet device" },
+  { id: "watch",      type: "watch",            name: "Watch",     icon: <Watch      size={18} />, color: "#8b5cf6", description: "Smart watch" },
+  { id: "printer",    type: "printer",          name: "Printer",   icon: <Printer    size={18} />, color: "#64748b", description: "Network printer" },
+  { id: "webcam",     type: "webcam",           name: "Webcam",    icon: <Webcam     size={18} />, color: "#ec4899", description: "Camera device" },
+  { id: "iot",        type: "iot",              name: "IoT",       icon: <Cpu        size={18} />, color: "#10b981", description: "IoT device" },
+  
+  // Development
+  { id: "code",       type: "code",             name: "Code",      icon: <Code2      size={18} />, color: "#a855f7", description: "Code repository" },
+  { id: "git",        type: "git",              name: "Git",       icon: <GitBranch  size={18} />, color: "#f97316", description: "Git repository" },
+  { id: "package",    type: "package",          name: "Package",   icon: <Package    size={18} />, color: "#10b981", description: "Package registry" },
+  { id: "testing",    type: "testing",          name: "Testing",   icon: <TestTube   size={18} />, color: "#f59e0b", description: "Testing environment" },
+  
+  // AI & ML
+  { id: "ai",         type: "ai",               name: "AI",        icon: <Brain      size={18} />, color: "#8b5cf6", description: "AI system" },
+  { id: "llm",        type: "llm",              name: "LLM",       icon: <Sparkles   size={18} />, color: "#a855f7", description: "Language model" },
+  { id: "bot",        type: "bot",              name: "Bot",       icon: <Bot        size={18} />, color: "#ec4899", description: "Chatbot/Agent" },
+  
+  // Network
+  { id: "router",     type: "router",           name: "Router",    icon: <Wifi       size={18} />, color: "#22d3ee", description: "Network router" },
 ];
 
 interface ToolbarProps {
@@ -100,6 +157,10 @@ interface ToolbarProps {
   onResetDiagram: () => void;
   isCustomMode: boolean;
   onAdminDashboard?: () => void;
+  backgroundColor: BgColor;
+  onBackgroundColorChange: (color: BgColor) => void;
+  backgroundPattern: BgPattern;
+  onBackgroundPatternChange: (pattern: BgPattern) => void;
 }
 
 export default function Toolbar({
@@ -133,6 +194,10 @@ export default function Toolbar({
   onZoomOut,
   onFitView,
   onSearch,
+  backgroundColor,
+  onBackgroundColorChange,
+  backgroundPattern,
+  onBackgroundPatternChange,
 }: ToolbarProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [paletteExpanded, setPaletteExpanded] = useState(false);
@@ -319,7 +384,7 @@ export default function Toolbar({
                     onDragStart={(e) => {
                       e.dataTransfer.setData(
                         "application/reactflow",
-                        JSON.stringify(template)
+                        JSON.stringify({ id: template.id, type: template.type, name: template.name, color: template.color, description: template.description })
                       );
                       e.dataTransfer.effectAllowed = "move";
                     }}
@@ -721,6 +786,115 @@ export default function Toolbar({
           >
             <ZoomIn size={16} />
           </button>
+        </div>
+      </div>
+
+      {/* Background Controls */}
+      <div className="space-y-2 pt-3 md:pt-4 border-t border-slate-800">
+        <span className="text-[10px] font-bold text-slate-400 uppercase px-2 tracking-wider">
+          Background
+        </span>
+        <div className="space-y-3">
+          {/* Color Swatches */}
+          <div className="px-2">
+            <div className="text-[10px] text-slate-500 mb-1.5">Color</div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => onBackgroundColorChange("slate")}
+                className={`
+                  w-10 h-10 rounded-lg transition-all
+                  bg-slate-950
+                  border-2 ${backgroundColor === "slate" ? "border-blue-500 shadow-lg shadow-blue-500/20" : "border-slate-700 hover:border-slate-600"}
+                `}
+                title="Slate (default)"
+                aria-label="Slate background"
+              />
+              <button
+                onClick={() => onBackgroundColorChange("black")}
+                className={`
+                  w-10 h-10 rounded-lg transition-all
+                  bg-black
+                  border-2 ${backgroundColor === "black" ? "border-blue-500 shadow-lg shadow-blue-500/20" : "border-slate-700 hover:border-slate-600"}
+                `}
+                title="Black"
+                aria-label="Black background"
+              />
+              <button
+                onClick={() => onBackgroundColorChange("white")}
+                className={`
+                  w-10 h-10 rounded-lg transition-all
+                  bg-white
+                  border-2 ${backgroundColor === "white" ? "border-blue-500 shadow-lg shadow-blue-500/20" : "border-slate-300 hover:border-slate-400"}
+                `}
+                title="White"
+                aria-label="White background"
+              />
+              <button
+                onClick={() => onBackgroundColorChange("gray")}
+                className={`
+                  w-10 h-10 rounded-lg transition-all
+                  bg-slate-500
+                  border-2 ${backgroundColor === "gray" ? "border-blue-500 shadow-lg shadow-blue-500/20" : "border-slate-700 hover:border-slate-600"}
+                `}
+                title="Gray"
+                aria-label="Gray background"
+              />
+            </div>
+          </div>
+
+          {/* Pattern Toggle */}
+          <div className="px-2">
+            <div className="text-[10px] text-slate-500 mb-1.5">Pattern</div>
+            <div className="flex gap-1 p-1 bg-slate-800/50 rounded-lg">
+              <button
+                onClick={() => onBackgroundPatternChange("none")}
+                className={`
+                  flex-1 px-2 py-1.5 rounded text-xs font-medium transition-all
+                  flex items-center justify-center gap-1.5
+                  ${
+                    backgroundPattern === "none"
+                      ? "bg-purple-500/20 text-purple-300"
+                      : "text-slate-400 hover:text-slate-300"
+                  }
+                `}
+                title="No pattern"
+              >
+                None
+              </button>
+              <button
+                onClick={() => onBackgroundPatternChange("dots")}
+                className={`
+                  flex-1 px-2 py-1.5 rounded text-xs font-medium transition-all
+                  flex items-center justify-center gap-1.5
+                  ${
+                    backgroundPattern === "dots"
+                      ? "bg-purple-500/20 text-purple-300"
+                      : "text-slate-400 hover:text-slate-300"
+                  }
+                `}
+                title="Dot grid"
+              >
+                <Grid3x3 size={14} />
+                Dots
+              </button>
+              <button
+                onClick={() => onBackgroundPatternChange("lines")}
+                className={`
+                  flex-1 px-2 py-1.5 rounded text-xs font-medium transition-all
+                  flex items-center justify-center gap-1.5
+                  ${
+                    backgroundPattern === "lines"
+                      ? "bg-purple-500/20 text-purple-300"
+                      : "text-slate-400 hover:text-slate-300"
+                  }
+                `}
+                title="Line grid"
+              >
+                <Grid3x3 size={14} />
+                Lines
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 

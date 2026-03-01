@@ -1,5 +1,3 @@
-"use client";
-
 import Header from "@/app/components/layout/Header";
 import LabDiagram from "@/app/components/diagram/LabDiagram";
 

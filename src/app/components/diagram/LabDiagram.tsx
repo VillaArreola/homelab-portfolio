@@ -15,6 +15,7 @@ import ReactFlow, {
   addEdge,
   Connection,
   ConnectionMode,
+  BackgroundVariant,
 } from "reactflow";
 import "reactflow/dist/style.css";
 import { Menu, X, MessageSquare } from "lucide-react";
@@ -59,6 +60,9 @@ type NodeData = {
   icon?: React.ReactNode;
 };
 
+export type BgColor = "slate" | "black" | "white" | "gray";
+export type BgPattern = "none" | "dots" | "lines";
+
 const nodeTypes = {
   infra: InfraNode,
 };
@@ -75,6 +79,8 @@ function DiagramContent() {
   const [isChatVisible, setIsChatVisible] = useState(false);
   const [isCustomMode, setIsCustomMode] = useState(false);
   const [mainView, setMainView] = useState<MainView>("diagram");
+  const [backgroundColor, setBackgroundColor] = useState<BgColor>("slate");
+  const [backgroundPattern, setBackgroundPattern] = useState<BgPattern>("none");
 
   // Confirm Dialog states
   const [confirmDialog, setConfirmDialog] = useState<{
@@ -102,6 +108,14 @@ function DiagramContent() {
   useEffect(() => {
     const adminStatus = localStorage.getItem("isAdmin");
     setIsAdmin(adminStatus === "true");
+  }, []);
+
+  // Load background preferences from localStorage
+  useEffect(() => {
+    const savedColor = localStorage.getItem("lab-background-color");
+    const savedPattern = localStorage.getItem("lab-background-pattern");
+    if (savedColor) setBackgroundColor(savedColor as BgColor);
+    if (savedPattern) setBackgroundPattern(savedPattern as BgPattern);
   }, []);
 
   // Generar nodos y aristas iniciales desde el JSON
@@ -365,6 +379,17 @@ function DiagramContent() {
       }
     }
   }, [nodes, reactFlowInstance, currentTopology]);
+
+  // Background controls
+  const handleBackgroundColorChange = useCallback((color: BgColor) => {
+    setBackgroundColor(color);
+    localStorage.setItem("lab-background-color", color);
+  }, []);
+
+  const handleBackgroundPatternChange = useCallback((pattern: BgPattern) => {
+    setBackgroundPattern(pattern);
+    localStorage.setItem("lab-background-pattern", pattern);
+  }, []);
 
   // ===== NODE EDITOR FUNCTIONS =====
   
@@ -816,11 +841,20 @@ function DiagramContent() {
           onGenerateWithAI={() => setIsAIGeneratorOpen(prev => !prev)}
           onSavePermanently={handleSavePermanently}
           onAdminDashboard={() => setIsAdminDashboardOpen(true)}
+          backgroundColor={backgroundColor}
+          onBackgroundColorChange={handleBackgroundColorChange}
+          backgroundPattern={backgroundPattern}
+          onBackgroundPatternChange={handleBackgroundPatternChange}
         />
       </div>
 
       {/* ===== DIAGRAM AREA ===== */}
-      <div className="flex-1 relative bg-slate-950 overflow-hidden">
+      <div className={`flex-1 relative overflow-hidden ${
+        backgroundColor === 'slate' ? 'bg-slate-950' :
+        backgroundColor === 'black' ? 'bg-black' :
+        backgroundColor === 'white' ? 'bg-white' :
+        'bg-slate-500'
+      }`}>
         {/* View mode toggle - always visible, floating at top-center */}
         <ViewModeToggle value={mainView} onChange={setMainView} />
 
@@ -845,16 +879,17 @@ function DiagramContent() {
               nodeStrokeWidth={2}
               zoomable
               pannable
-              maskColor="rgba(15, 23, 42, 0.4)"
+              maskColor={backgroundColor === 'white' ? 'rgba(241, 245, 249, 0.4)' : 'rgba(15, 23, 42, 0.4)'}
               style={{
                 borderRadius: '1rem',
               }}
               className="hidden md:block"
             />
             <Background
+              variant={backgroundPattern === "none" ? undefined : (backgroundPattern as BackgroundVariant)}
               gap={24}
-              size={0}
-              color="transparent"
+              size={backgroundPattern === "none" ? 0 : 1}
+              color={backgroundPattern === "none" ? "transparent" : (backgroundColor === 'white' ? '#cbd5e1' : '#1e293b')}
             />
           </ReactFlow>
           <Legend />
@@ -862,14 +897,24 @@ function DiagramContent() {
 
         {/* Hardware Table */}
         {mainView === "hardware" && (
-          <div className="absolute inset-0 overflow-auto bg-slate-950">
+          <div className={`absolute inset-0 overflow-auto ${
+            backgroundColor === 'slate' ? 'bg-slate-950' :
+            backgroundColor === 'black' ? 'bg-black' :
+            backgroundColor === 'white' ? 'bg-white' :
+            'bg-slate-500'
+          }`}>
             <HardwareTable topology={filteredTopology} onSelectNode={handleTableNodeSelect} />
           </div>
         )}
 
         {/* Services Table */}
         {mainView === "services" && (
-          <div className="absolute inset-0 overflow-auto bg-slate-950">
+          <div className={`absolute inset-0 overflow-auto ${
+            backgroundColor === 'slate' ? 'bg-slate-950' :
+            backgroundColor === 'black' ? 'bg-black' :
+            backgroundColor === 'white' ? 'bg-white' :
+            'bg-slate-500'
+          }`}>
             <ServicesTable topology={filteredTopology} onSelectNode={handleTableNodeSelect} />
           </div>
         )}

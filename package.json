@@ -24,6 +24,9 @@
     "reactflow": "^11.11.4",
     "tailwind-merge": "^3.4.0"
   },
+  "overrides": {
+    "node-domexception": "file:./local-packages/node-domexception"
+  },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",

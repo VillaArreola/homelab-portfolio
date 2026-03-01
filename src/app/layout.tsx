@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://lab.villaarreola.com"),
-  title: "My Homelab Portfolio",
+  title: "Homelab Portfolio | Martin Villa Arreola",
   description: "Interactive homelab infrastructure diagram with real-time monitoring and AI-powered topology generation",
   icons: {
     icon: [
@@ -35,9 +35,9 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://homelab.villaarreola.com",
-    siteName: "My Homelab Portfolio",
-    title: "My Homelab Portfolio - Interactive Infrastructure Diagram",
+    url: "https://lab.villaarreola.com",
+    siteName: "Homelab Portfolio | Martin Villa Arreola",
+    title: "Homelab Portfolio | Martin Villa Arreola",
     description: "Interactive homelab infrastructure diagram with real-time monitoring and AI-powered topology generation",
     images: [
       {
@@ -51,7 +51,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "My Homelab Portfolio",
+    title: "Homelab Portfolio | Martin Villa Arreola",
     description: "Interactive homelab infrastructure diagram with real-time monitoring and AI-powered topology generation",
     images: ["/diagram1200-630.png"],
   },
@@ -85,6 +85,34 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@graph": [
+                {
+                  "@type": "Person",
+                  "@id": "https://lab.villaarreola.com/#person",
+                  "name": "Martin Villa Arreola",
+                  "url": "https://www.villaarreola.com",
+                  "sameAs": [
+                    "https://linkedin.com/in/villaarreola",
+                    "https://github.com/villaarreola"
+                  ]
+                },
+                {
+                  "@type": "WebSite",
+                  "@id": "https://lab.villaarreola.com/#website",
+                  "url": "https://lab.villaarreola.com",
+                  "name": "Homelab Portfolio – Martin Villa Arreola",
+                  "description": "Interactive homelab infrastructure diagram with real-time monitoring and AI-powered topology generation",
+                  "author": { "@id": "https://lab.villaarreola.com/#person" }
+                }
+              ]
+            })
+          }}
+        />
         {children}
         <CookieBanner />
       </body>

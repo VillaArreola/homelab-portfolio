@@ -10,7 +10,7 @@ export default function Header() {
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-500/10 border border-blue-500/20">
           <Network className="text-blue-400" size={20} strokeWidth={2.5} />
-          <h1 className="font-bold text-base tracking-tight text-slate-100">
+          <h1 className="hidden sm:block font-bold text-base tracking-tight text-slate-100">
             VILLAARREOLA LAB
           </h1>
         </div>
@@ -77,7 +77,7 @@ export default function Header() {
       </div>
 
       {/* Social Links */}
-      <div className="flex items-center gap-2 pl-4 border-l border-slate-800/50">
+      <div className="flex items-center gap-1 sm:gap-2 pl-3 sm:pl-4 border-l border-slate-800/50">
         <a
           href="https://linkedin.com/in/villaarreola"
           target="_blank"
@@ -121,7 +121,7 @@ export default function Header() {
         <Link
           href="/terms"
           className="
-            p-2 rounded-lg
+            hidden sm:flex p-2 rounded-lg
             text-slate-500 hover:text-slate-300 hover:bg-slate-800/50
             transition-all duration-200
           "

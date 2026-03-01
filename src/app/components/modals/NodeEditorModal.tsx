@@ -1,10 +1,81 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X, Plus, Edit2, AlertCircle } from "lucide-react";
+import {
+  X, Plus, Edit2, AlertCircle,
+  // Icons for preview
+  Cloud, Server, HardDrive, Container, Shield, Monitor, Terminal, Network, Laptop,
+  Fingerprint, Lock, Key, ShieldAlert, ShieldCheck, Eye, UserCheck, ScanFace,
+  Smartphone, Tablet, Watch, Printer, Webcam, Cpu,
+  Keyboard, Mouse, Headphones, Speaker, Usb,
+  Code2, GitBranch, GitCommit, GitPullRequest, Webhook, Package, TestTube, Bug, Binary,
+  FileCode2, Braces,
+  Brain, Sparkles, Bot, Wifi, Database
+} from "lucide-react";
 import { InfraItem } from "@/lib/infraTypes";
 import IconPicker from "@/app/components/ui/IconPicker";
 import { ICON_REGISTRY } from "@/lib/iconRegistry";
+
+// Helper to get icon preview for a given type
+const getTypeIconPreview = (type: string): { icon: React.ReactNode; color: string } => {
+  const iconMap: Record<string, { icon: React.ReactNode; color: string }> = {
+    // Infrastructure
+    'host': { icon: <Laptop size={20} />, color: '#60a5fa' },
+    'cloud-host': { icon: <Cloud size={20} />, color: '#f97316' },
+    'hypervisor': { icon: <HardDrive size={20} />, color: '#a855f7' },
+    'server': { icon: <Server size={20} />, color: '#ef4444' },
+    'vm': { icon: <Monitor size={20} />, color: '#64748b' },
+    'container-runtime': { icon: <Container size={20} />, color: '#3b82f6' },
+    'storage': { icon: <HardDrive size={20} />, color: '#64748b' },
+    'subnet': { icon: <Server size={20} />, color: '#64748b' },
+    // Services
+    'service': { icon: <Network size={20} />, color: '#10b981' },
+    'database': { icon: <Database size={20} />, color: '#a855f7' },
+    'api': { icon: <Webhook size={20} />, color: '#06b6d4' },
+    'terminal': { icon: <Terminal size={20} />, color: '#a855f7' },
+    // Security
+    'firewall': { icon: <Shield size={20} />, color: '#10b981' },
+    'vpn': { icon: <Lock size={20} />, color: '#f59e0b' },
+    'security': { icon: <ShieldAlert size={20} />, color: '#ef4444' },
+    'authentication': { icon: <UserCheck size={20} />, color: '#8b5cf6' },
+    'encryption': { icon: <Key size={20} />, color: '#06b6d4' },
+    'scanner': { icon: <ScanFace size={20} />, color: '#ec4899' },
+    'ids': { icon: <Eye size={20} />, color: '#f43f5e' },
+    'fingerprint': { icon: <Fingerprint size={20} />, color: '#8b5cf6' },
+    // Devices
+    'smartphone': { icon: <Smartphone size={20} />, color: '#06b6d4' },
+    'tablet': { icon: <Tablet size={20} />, color: '#3b82f6' },
+    'watch': { icon: <Watch size={20} />, color: '#8b5cf6' },
+    'printer': { icon: <Printer size={20} />, color: '#64748b' },
+    'webcam': { icon: <Webcam size={20} />, color: '#ec4899' },
+    'keyboard': { icon: <Keyboard size={20} />, color: '#64748b' },
+    'mouse': { icon: <Mouse size={20} />, color: '#64748b' },
+    'headphones': { icon: <Headphones size={20} />, color: '#a855f7' },
+    'speaker': { icon: <Speaker size={20} />, color: '#a855f7' },
+    'usb': { icon: <Usb size={20} />, color: '#f59e0b' },
+    'iot': { icon: <Cpu size={20} />, color: '#10b981' },
+    'router': { icon: <Wifi size={20} />, color: '#22d3ee' },
+    // Development
+    'code': { icon: <Code2 size={20} />, color: '#a855f7' },
+    'git': { icon: <GitBranch size={20} />, color: '#f97316' },
+    'git-commit': { icon: <GitCommit size={20} />, color: '#f97316' },
+    'git-pr': { icon: <GitPullRequest size={20} />, color: '#3b82f6' },
+    'webhook': { icon: <Webhook size={20} />, color: '#3b82f6' },
+    'package': { icon: <Package size={20} />, color: '#10b981' },
+    'testing': { icon: <TestTube size={20} />, color: '#f59e0b' },
+    'bug': { icon: <Bug size={20} />, color: '#ef4444' },
+    'binary': { icon: <Binary size={20} />, color: '#8b5cf6' },
+    'file-code': { icon: <FileCode2 size={20} />, color: '#06b6d4' },
+    'braces': { icon: <Braces size={20} />, color: '#8b5cf6' },
+    // AI & ML
+    'ai': { icon: <Brain size={20} />, color: '#8b5cf6' },
+    'llm': { icon: <Sparkles size={20} />, color: '#a855f7' },
+    'ml': { icon: <Brain size={20} />, color: '#7c3aed' },
+    'bot': { icon: <Bot size={20} />, color: '#ec4899' },
+  };
+  
+  return iconMap[type] || { icon: <Server size={20} />, color: '#64748b' };
+};
 
 type Props = {
   isOpen: boolean;
@@ -19,7 +90,7 @@ export default function NodeEditorModal({ isOpen, mode, node, allNodes, onClose,
   const [formData, setFormData] = useState<Partial<InfraItem>>({
     id: "",
     name: "",
-    type: "server",
+    type: "hypervisor",
     parent: undefined,
     layer: undefined,
     network: undefined,
@@ -48,7 +119,7 @@ export default function NodeEditorModal({ isOpen, mode, node, allNodes, onClose,
         setFormData({
           id: "",
           name: "",
-          type: "server",
+          type: "hypervisor",
           parent: undefined,
           layer: undefined,
           network: undefined,
@@ -108,7 +179,7 @@ export default function NodeEditorModal({ isOpen, mode, node, allNodes, onClose,
     setFormData({
       id: "",
       name: "",
-      type: "server",
+      type: "hypervisor",
       parent: undefined,
       layer: undefined,
       network: undefined,
@@ -246,30 +317,168 @@ export default function NodeEditorModal({ isOpen, mode, node, allNodes, onClose,
 
             {/* Type */}
             <div>
-              <label htmlFor="node-type" className="block text-sm font-medium text-slate-300 mb-2">
+              <label className="block text-sm font-medium text-slate-300 mb-2">
                 Type *
               </label>
-              <input
-                id="node-type"
-                type="text"
-                value={formData.type}
-                onChange={(e) => updateField("type", e.target.value)}
-                placeholder="e.g., hypervisor, firewall, vm, container"
-                className={`
-                  w-full px-4 py-2.5 
-                  bg-slate-800/50 border ${errors.type ? "border-red-500/50" : "border-slate-700"}
-                  rounded-lg text-sm text-slate-200
-                  placeholder:text-slate-500
-                  focus:outline-none focus:border-blue-500/50 focus:bg-slate-800/70
-                  transition-all
-                `}
-              />
               {errors.type && (
-                <p className="mt-1.5 text-xs text-red-400 flex items-center gap-1">
+                <p className="mb-2 text-xs text-red-400 flex items-center gap-1">
                   <AlertCircle size={12} />
                   {errors.type}
                 </p>
               )}
+              <div className={`rounded-lg border ${errors.type ? "border-red-500/50" : "border-slate-700"} bg-slate-800/30 p-3 space-y-3`}>
+                {([
+                  { label: "Infrastructure", types: [
+                    { value: "host", name: "Host / Laptop" },
+                    { value: "cloud-host", name: "Cloud Host" },
+                    { value: "hypervisor", name: "Hypervisor" },
+                    { value: "server", name: "Server" },
+                    { value: "vm", name: "Virtual Machine" },
+                    { value: "container-runtime", name: "Container" },
+                    { value: "storage", name: "Storage" },
+                    { value: "subnet", name: "Subnet" },
+                  ]},
+                  { label: "Services", types: [
+                    { value: "service", name: "Service" },
+                    { value: "database", name: "Database" },
+                    { value: "api", name: "API" },
+                    { value: "terminal", name: "Terminal" },
+                  ]},
+                  { label: "Security", types: [
+                    { value: "firewall", name: "Firewall" },
+                    { value: "vpn", name: "VPN" },
+                    { value: "security", name: "Security" },
+                    { value: "authentication", name: "Auth" },
+                    { value: "encryption", name: "Encryption" },
+                    { value: "scanner", name: "Scanner" },
+                    { value: "ids", name: "IDS/IPS" },
+                    { value: "fingerprint", name: "Biometric" },
+                  ]},
+                  { label: "Devices", types: [
+                    { value: "smartphone", name: "Phone" },
+                    { value: "tablet", name: "Tablet" },
+                    { value: "watch", name: "Watch" },
+                    { value: "printer", name: "Printer" },
+                    { value: "webcam", name: "Webcam" },
+                    { value: "keyboard", name: "Keyboard" },
+                    { value: "mouse", name: "Mouse" },
+                    { value: "headphones", name: "Headphones" },
+                    { value: "speaker", name: "Speaker" },
+                    { value: "usb", name: "USB" },
+                    { value: "iot", name: "IoT" },
+                    { value: "router", name: "Router" },
+                  ]},
+                  { label: "Development", types: [
+                    { value: "code", name: "Code" },
+                    { value: "git", name: "Git" },
+                    { value: "git-commit", name: "Commit" },
+                    { value: "git-pr", name: "Pull Request" },
+                    { value: "webhook", name: "Webhook" },
+                    { value: "package", name: "Package" },
+                    { value: "testing", name: "Testing" },
+                    { value: "bug", name: "Bug" },
+                    { value: "binary", name: "Binary" },
+                    { value: "file-code", name: "Code File" },
+                    { value: "braces", name: "Code Block" },
+                  ]},
+                  { label: "AI & ML", types: [
+                    { value: "ai", name: "AI System" },
+                    { value: "llm", name: "LLM" },
+                    { value: "ml", name: "ML" },
+                    { value: "bot", name: "Bot" },
+                  ]},
+                ] as { label: string; types: { value: string; name: string }[] }[]).map((group) => (
+                  <div key={group.label}>
+                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">{group.label}</p>
+                    <div className="grid grid-cols-4 gap-1">
+                      {group.types.map((t) => {
+                        const preview = getTypeIconPreview(t.value);
+                        const isSelected = formData.type === t.value;
+                        return (
+                          <button
+                            key={t.value}
+                            type="button"
+                            onClick={() => updateField("type", t.value)}
+                            className={`
+                              flex flex-col items-center gap-1 p-2 rounded-lg border transition-all
+                              ${isSelected
+                                ? "border-blue-500/60 bg-blue-500/10 text-blue-400"
+                                : "border-slate-700/50 hover:border-slate-600 hover:bg-slate-800/60 text-slate-400"
+                              }
+                            `}
+                            title={t.name}
+                          >
+                            <div
+                              className="flex items-center justify-center w-7 h-7 rounded-md"
+                              style={{
+                                backgroundColor: `${preview.color}22`,
+                                color: isSelected ? preview.color : preview.color + "cc",
+                              }}
+                            >
+                              {preview.icon}
+                            </div>
+                            <span className="text-[9px] font-medium leading-tight text-center line-clamp-1 w-full">
+                              {t.name}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Brand logo override + color — shown right below the type grid */}
+              <div className="mt-4 pt-4 border-t border-slate-800/60 space-y-3">
+                <div>
+                  <p className="text-xs font-semibold text-slate-400 mb-0.5">Brand Logo <span className="text-slate-600 font-normal">(optional override)</span></p>
+                  <p className="text-[10px] text-slate-600 mb-2">Select a specific software logo to replace the type icon above.</p>
+                  <IconPicker
+                    value={formData.icon}
+                    onChange={(key) => {
+                      if (key) {
+                        const entry = ICON_REGISTRY.find((e) => e.key === key);
+                        setFormData((prev) => ({
+                          ...prev,
+                          icon: key,
+                          iconColor: prev.iconColor || entry?.brandColor,
+                        }));
+                      } else {
+                        setFormData((prev) => ({ ...prev, icon: undefined }));
+                      }
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <p className="text-xs font-semibold text-slate-400 mb-2">Color <span className="text-slate-600 font-normal">(optional override)</span></p>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="color"
+                      value={formData.iconColor || "#64748b"}
+                      onChange={(e) => updateField("iconColor", e.target.value)}
+                      className="w-10 h-10 rounded-lg cursor-pointer bg-transparent border-0 p-0"
+                    />
+                    <input
+                      type="text"
+                      value={formData.iconColor || ""}
+                      onChange={(e) => updateField("iconColor", e.target.value)}
+                      placeholder="#64748b"
+                      maxLength={7}
+                      className="flex-1 px-4 py-2.5 bg-slate-800/50 border border-slate-700 rounded-lg text-sm text-slate-200 font-mono placeholder:text-slate-500 focus:outline-none focus:border-blue-500/50"
+                    />
+                    {formData.iconColor && (
+                      <button
+                        type="button"
+                        onClick={() => updateField("iconColor", undefined)}
+                        className="p-2 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-slate-200 transition-colors"
+                      >
+                        <X size={16} />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -558,63 +767,6 @@ export default function NodeEditorModal({ isOpen, mode, node, allNodes, onClose,
             </div>
           </div>
 
-          {/* Appearance */}
-          <div className="space-y-4 pt-4 border-t border-slate-800">
-            <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">Appearance</h3>
-
-            {/* Icon Picker */}
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1">Custom Icon</label>
-              <p className="text-xs text-slate-500 mb-3">
-                Leave empty to use the default icon for this node type.
-              </p>
-              <IconPicker
-                value={formData.icon}
-                onChange={(key) => {
-                  if (key) {
-                    const entry = ICON_REGISTRY.find((e) => e.key === key);
-                    setFormData((prev) => ({
-                      ...prev,
-                      icon: key,
-                      iconColor: prev.iconColor || entry?.brandColor,
-                    }));
-                  } else {
-                    setFormData((prev) => ({ ...prev, icon: undefined }));
-                  }
-                }}
-              />
-            </div>
-
-            {/* Color override */}
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1">Icon Color</label>
-              <div className="flex items-center gap-3">
-                <input
-                  type="color"
-                  value={formData.iconColor || "#64748b"}
-                  onChange={(e) => updateField("iconColor", e.target.value)}
-                  className="w-10 h-10 rounded-lg cursor-pointer bg-transparent border-0 p-0"
-                />
-                <input
-                  type="text"
-                  value={formData.iconColor || ""}
-                  onChange={(e) => updateField("iconColor", e.target.value)}
-                  placeholder="#64748b (leave empty for default)"
-                  maxLength={7}
-                  className="flex-1 px-4 py-2.5 bg-slate-800/50 border border-slate-700 rounded-lg text-sm text-slate-200 font-mono placeholder:text-slate-500 focus:outline-none focus:border-blue-500/50"
-                />
-                {formData.iconColor && (
-                  <button
-                    type="button"
-                    onClick={() => updateField("iconColor", undefined)}
-                    className="p-2 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-slate-200 transition-colors"
-                  >
-                    <X size={16} />
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
         </form>
 
         {/* Footer - Fixed */}

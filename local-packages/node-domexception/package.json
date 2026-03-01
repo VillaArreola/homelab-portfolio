@@ -1,0 +1,8 @@
+{
+  "name": "node-domexception",
+  "version": "1.0.0",
+  "description": "Local stub — re-exports native DOMException available in Node.js 17+",
+  "type": "module",
+  "exports": "./index.js",
+  "main": "./index.js"
+}

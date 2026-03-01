@@ -13,6 +13,48 @@ import {
   Terminal,
   Network,
   Laptop,
+  // Security
+  Fingerprint,
+  Lock,
+  Key,
+  ShieldAlert,
+  ShieldCheck,
+  Eye,
+  EyeOff,
+  UserCheck,
+  FileKey,
+  ScanFace,
+  // Devices
+  Smartphone,
+  Tablet,
+  Watch,
+  Printer,
+  Usb,
+  Keyboard,
+  Mouse,
+  Webcam,
+  Headphones,
+  Speaker,
+  // Coding & Development
+  Code,
+  Code2,
+  Braces,
+  FileCode,
+  FileCode2,
+  GitBranch,
+  GitCommit,
+  GitPullRequest,
+  Package,
+  Bug,
+  TestTube,
+  Webhook,
+  Binary,
+  Database,
+  // AI & ML
+  Brain,
+  Sparkles,
+  Bot,
+  Cpu,
 } from "lucide-react";
 import { createElement } from "react";
 
@@ -58,6 +100,48 @@ const iconColors: Record<string, string> = {
   // Subnets
   "ceh-subnet": "#a855f7", // purple-500
   subnet: "#64748b", // slate-500
+  
+  // Security
+  security: "#ef4444", // red-500
+  firewall: "#10b981", // emerald-500
+  vpn: "#f59e0b", // amber-500
+  authentication: "#8b5cf6", // violet-500
+  encryption: "#06b6d4", // cyan-500
+  scanner: "#ec4899", // pink-500
+  ids: "#f43f5e", // rose-500
+  ips: "#ef4444", // red-500
+  fingerprint: "#8b5cf6", // violet-500
+  
+  // Devices
+  smartphone: "#06b6d4", // cyan-500
+  tablet: "#3b82f6", // blue-500
+  watch: "#8b5cf6", // violet-500
+  printer: "#64748b", // slate-500
+  webcam: "#ec4899", // pink-500
+  iot: "#10b981", // emerald-500
+  keyboard: "#64748b", // slate-500
+  mouse: "#64748b", // slate-500
+  headphones: "#a855f7", // purple-500
+  speaker: "#a855f7", // purple-500
+  usb: "#f59e0b", // amber-500
+  
+  // Coding & Development
+  code: "#a855f7", // purple-500
+  git: "#f97316", // orange-500
+  api: "#06b6d4", // cyan-500
+  webhook: "#3b82f6", // blue-500
+  package: "#10b981", // emerald-500
+  testing: "#f59e0b", // amber-500
+  ci: "#22d3ee", // cyan-400
+  cd: "#10b981", // emerald-500
+  bug: "#ef4444", // red-500
+  binary: "#8b5cf6", // violet-500
+  
+  // AI & ML
+  ai: "#8b5cf6", // violet-500
+  llm: "#a855f7", // purple-500
+  ml: "#7c3aed", // violet-600
+  bot: "#ec4899", // pink-500
 };
 
 // ================================
@@ -88,6 +172,54 @@ function getIcon(type: string, id: string, customIconKey?: string) {
     "cloud-host": Cloud,
     service: Network,
     subnet: Server,
+    database: Database,
+    
+    // Security
+    security: ShieldAlert,
+    firewall: Shield,
+    vpn: Lock,
+    authentication: UserCheck,
+    encryption: Key,
+    scanner: ScanFace,
+    ids: Eye,
+    ips: ShieldCheck,
+    fingerprint: Fingerprint,
+    "file-encryption": FileKey,
+    "eye-off": EyeOff,
+    
+    // Devices  
+    smartphone: Smartphone,
+    tablet: Tablet,
+    watch: Watch,
+    printer: Printer,
+    webcam: Webcam,
+    keyboard: Keyboard,
+    mouse: Mouse,
+    headphones: Headphones,
+    speaker: Speaker,
+    usb: Usb,
+    iot: Cpu,
+    
+    // Coding & Development
+    code: Code2,
+    "code-simple": Code,
+    git: GitBranch,
+    "git-commit": GitCommit,
+    "git-pr": GitPullRequest,
+    api: Webhook,
+    webhook: Webhook,
+    package: Package,
+    testing: TestTube,
+    bug: Bug,
+    binary: Binary,
+    "file-code": FileCode2,
+    braces: Braces,
+    
+    // AI & ML
+    ai: Brain,
+    llm: Sparkles,
+    ml: Brain,
+    bot: Bot,
   };
 
   const IconComponent = iconMap[type] || Server;
