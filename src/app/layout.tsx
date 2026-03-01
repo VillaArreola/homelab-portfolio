@@ -14,6 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://homelab.villaarreola.com"),
   title: "My Homelab Portfolio",
   description: "Interactive homelab infrastructure diagram with real-time monitoring and AI-powered topology generation",
   icons: {

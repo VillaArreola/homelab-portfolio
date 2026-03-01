@@ -529,6 +529,7 @@ export default function Toolbar({
           {isAdmin && onAdminDashboard && (
             <button
               onClick={onAdminDashboard}
+              data-testid="admin-dashboard-btn"
               className="
                 flex items-center gap-2 md:gap-3 p-2 rounded-lg w-full transition-all
                 bg-purple-500/10 border border-purple-500/20
@@ -544,6 +545,7 @@ export default function Toolbar({
           {isAdmin ? (
             <button
               onClick={onSavePermanently}
+              data-testid="save-permanently-btn"
               className="
                 flex items-center gap-2 md:gap-3 p-2 rounded-lg w-full transition-all
                 bg-emerald-500/10 border border-emerald-500/20
@@ -556,6 +558,7 @@ export default function Toolbar({
           ) : (
             <button
               onClick={onAdminLogin}
+              data-testid="admin-mode-btn"
               className="
                 flex items-center gap-2 md:gap-3 p-2 rounded-lg w-full transition-all
                 text-slate-400 hover:bg-orange-500/10 hover:text-orange-400

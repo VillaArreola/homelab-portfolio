@@ -34,7 +34,7 @@ export default function AdminDashboardModal({
   ];
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div data-testid="admin-dashboard-modal" className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div className="bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-700">
@@ -57,6 +57,7 @@ export default function AdminDashboardModal({
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
+              data-testid={`tab-${tab.id}`}
               className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-t-lg transition-colors ${
                 activeTab === tab.id
                   ? "bg-slate-800 text-purple-400 border-b-2 border-purple-500"

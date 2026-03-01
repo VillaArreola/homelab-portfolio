@@ -75,6 +75,7 @@ export default function AdminLoginModal({ isOpen, onClose, onSuccess }: Props) {
             </label>
             <input
               id="admin-password"
+              data-testid="admin-password-input"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -90,7 +91,7 @@ export default function AdminLoginModal({ isOpen, onClose, onSuccess }: Props) {
               autoFocus
             />
             {error && (
-              <p className="mt-2 text-xs text-red-400 flex items-center gap-1">
+              <p data-testid="admin-login-error" className="mt-2 text-xs text-red-400 flex items-center gap-1">
                 <span className="inline-block w-1 h-1 rounded-full bg-red-400"></span>
                 {error}
               </p>
@@ -114,6 +115,7 @@ export default function AdminLoginModal({ isOpen, onClose, onSuccess }: Props) {
             </button>
             <button
               type="submit"
+              data-testid="admin-login-submit"
               className="
                 flex-1 px-4 py-2.5 rounded-lg
                 bg-orange-500/20 border border-orange-500/30

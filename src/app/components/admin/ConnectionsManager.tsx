@@ -154,7 +154,7 @@ export default function ConnectionsManager({
   };
 
   return (
-    <div className="space-y-4">
+    <div data-testid="connections-manager" className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -166,6 +166,7 @@ export default function ConnectionsManager({
         <div className="flex gap-2">
           <button
             onClick={handleAdd}
+            data-testid="add-connection-btn"
             className="flex items-center gap-2 px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm rounded-lg transition-colors"
           >
             <Plus size={16} />
@@ -174,6 +175,7 @@ export default function ConnectionsManager({
           <button
             onClick={handleSave}
             disabled={isSaving}
+            data-testid="save-connections-btn"
             className="flex items-center gap-2 px-3 py-2 bg-green-600 hover:bg-green-700 disabled:bg-slate-700 disabled:text-slate-500 text-white text-sm rounded-lg transition-colors"
           >
             <Save size={16} />
@@ -190,7 +192,7 @@ export default function ConnectionsManager({
         </div>
       )}
       {error && (
-        <div className="flex items-center gap-2 px-3 py-2 bg-red-500/10 border border-red-500/20 text-red-400 text-sm rounded-lg">
+        <div data-testid="self-loop-error" className="flex items-center gap-2 px-3 py-2 bg-red-500/10 border border-red-500/20 text-red-400 text-sm rounded-lg">
           <AlertCircle size={16} />
           {error}
         </div>
@@ -217,6 +219,7 @@ export default function ConnectionsManager({
               <select
                 value={formData.from}
                 onChange={(e) => setFormData({ ...formData, from: e.target.value })}
+                data-testid="conn-from-input"
                 className="w-full px-3 py-2 bg-slate-900 border border-slate-700 text-slate-200 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
               >
                 <option value="">Select source node...</option>
@@ -236,6 +239,7 @@ export default function ConnectionsManager({
               <select
                 value={formData.to}
                 onChange={(e) => setFormData({ ...formData, to: e.target.value })}
+                data-testid="conn-to-input"
                 className="w-full px-3 py-2 bg-slate-900 border border-slate-700 text-slate-200 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
               >
                 <option value="">Select target node...</option>
@@ -257,6 +261,7 @@ export default function ConnectionsManager({
               <select
                 value={formData.type}
                 onChange={(e) => setFormData({ ...formData, type: e.target.value as ConnectionType })}
+                data-testid="conn-type-input"
                 className="w-full px-3 py-2 bg-slate-900 border border-slate-700 text-slate-200 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
               >
                 {VALID_CONNECTION_TYPES.map((type) => (
@@ -291,6 +296,7 @@ export default function ConnectionsManager({
               value={formData.label}
               onChange={(e) => setFormData({ ...formData, label: e.target.value })}
               placeholder="e.g., Encrypted Tunnel Active"
+              data-testid="conn-label-input"
               className="w-full px-3 py-2 bg-slate-900 border border-slate-700 text-slate-200 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
             />
           </div>
@@ -328,7 +334,7 @@ export default function ConnectionsManager({
       )}
 
       {/* Connections Table */}
-      <div className="bg-slate-800 border border-slate-700 rounded-lg overflow-hidden">
+      <div data-testid="connections-table" className="bg-slate-800 border border-slate-700 rounded-lg overflow-hidden">
         <table className="w-full text-sm">
           <thead className="bg-slate-700/50">
             <tr>
