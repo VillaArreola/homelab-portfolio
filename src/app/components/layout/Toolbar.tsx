@@ -354,7 +354,7 @@ export default function Toolbar({
               border border-purple-500/40 hover:border-purple-500/60
               shadow-lg shadow-purple-500/20
             "
-            title="Generate diagram with AI"
+            title="Build infrastructure with AI (click to toggle)"
           >
             <Sparkles size={18} className="animate-pulse" />
             <span className="text-xs md:text-sm font-medium">Generate with AI</span>

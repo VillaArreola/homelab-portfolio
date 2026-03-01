@@ -58,10 +58,30 @@ function checkRateLimit(ip: string): { allowed: boolean; resetIn?: number } {
 }
 
 /**
- * Build system prompt with schema and examples
+ * Build system prompt with schema, examples, and conversational context
  */
-function buildSystemPrompt(): string {
-  return `You are an infrastructure topology generator. Your ONLY task is to generate valid JSON arrays of infrastructure nodes.
+function buildSystemPrompt(
+  conversationHistory?: Array<{ role: string; content: string }>,
+  currentTopology?: InfraItem[]
+): string {
+  // Extract context from conversation
+  let contextSection = "";
+  
+  if (currentTopology && currentTopology.length > 0) {
+    const nodeIds = currentTopology.map(n => n.id).join(", ");
+    contextSection += `\n\n🏗️ **CURRENT STATE**\nExisting topology has ${currentTopology.length} nodes: ${nodeIds}\n`;
+  }
+  
+  if (conversationHistory && conversationHistory.length > 0) {
+    const lastUserMsg = conversationHistory.filter(m => m.role === "user").slice(-1)[0]?.content || "";
+    const isModification = /\b(agrega|añade|add|modifica|modify|cambia|change|elimina|remove)\b/i.test(lastUserMsg);
+    
+    if (isModification && currentTopology) {
+      contextSection += `\n⚠️ **USER WANTS TO MODIFY** existing topology. Generate COMPLETE new topology with changes applied.\n`;
+    }
+  }
+  
+  return `You are an infrastructure topology generator. Your ONLY task is to generate valid JSON arrays of infrastructure nodes.${contextSection}
 
 📋 **OUTPUT FORMAT** (STRICT)
 You MUST output ONLY a valid JSON array. NO markdown, NO explanations, NO code blocks.
@@ -163,7 +183,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { prompt } = body;
+    const { prompt, conversationHistory, currentTopology } = body;
 
     // Validation
     if (!prompt || typeof prompt !== "string" || !prompt.trim()) {
@@ -197,7 +217,8 @@ export async function POST(request: Request) {
         body: JSON.stringify({
           model: LLM_CONFIG.model,
           messages: [
-            { role: "system", content: buildSystemPrompt() },
+            { role: "system", content: buildSystemPrompt(conversationHistory, currentTopology) },
+            ...(conversationHistory || []),
             { role: "user", content: prompt },
           ],
           temperature: LLM_CONFIG.temperature,

@@ -24,11 +24,11 @@ import NodePanel from "./NodePanel";
 import Legend from "./Legend";
 import Toolbar from "../layout/Toolbar";
 import ChatWithInfra from "../chat/ChatWithInfra";
+import GeneratorChat from "../chat/GeneratorChat";
 import AdminLoginModal from "../modals/AdminLoginModal";
 import NodeEditorModal from "../modals/NodeEditorModal";
 import ConfirmDialog from "../modals/ConfirmDialog";
 import MermaidImportModal from "../modals/MermaidImportModal";
-import AIGeneratorModal from "../modals/AIGeneratorModal";
 import ViewModeToggle, { MainView } from "../views/ViewModeToggle";
 import HardwareTable from "../views/HardwareTable";
 import ServicesTable from "../views/ServicesTable";
@@ -606,9 +606,10 @@ function DiagramContent() {
 
   // Import generated topology from AI
   const handleImportGenerated = useCallback((items: InfraItem[]) => {
-    setCurrentTopology(prev => [...prev, ...items]);
-    setIsAIGeneratorOpen(false);
-    setSaveMessage(`✓ ${items.length} nodos generados con IA`);
+    setCurrentTopology(items); // REPLACEMENT not additive
+    setActiveView("full");
+    setIsCustomMode(true);
+    setSaveMessage(`✓ ${items.length} nodos aplicados al diagrama`);
     setTimeout(() => setSaveMessage(""), 3000);
   }, []);
 
@@ -740,7 +741,7 @@ function DiagramContent() {
           onImportTopology={handleImportTopology}
           onPasteJSON={handlePasteJSON}
           onImportMermaid={() => setIsMermaidImportOpen(true)}
-          onGenerateWithAI={() => setIsAIGeneratorOpen(true)}
+          onGenerateWithAI={() => setIsAIGeneratorOpen(prev => !prev)}
           onSavePermanently={handleSavePermanently}
         />
       </div>
@@ -801,8 +802,9 @@ function DiagramContent() {
         )}
 
         {/* Chat flotante - posicionado al lado del MiniMap */}
+        {/* Q&A Chat only visible when Generator is not active */}
         <div className="absolute bottom-4 left-4 z-40">
-          {isChatVisible ? (
+          {isChatVisible && !isAIGeneratorOpen ? (
             <div className="flex flex-col gap-2">
               <ChatWithInfra infrastructureData={currentTopology} />
               <button
@@ -814,7 +816,7 @@ function DiagramContent() {
                 <MessageSquare size={18} />
               </button>
             </div>
-          ) : (
+          ) : !isAIGeneratorOpen ? (
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setIsChatVisible(true)}
@@ -831,6 +833,15 @@ function DiagramContent() {
                 </div>
               </div>
             </div>
+          ) : null}
+          
+          {/* Generator Chat - replaces Q&A when active */}
+          {isAIGeneratorOpen && (
+            <GeneratorChat
+              currentTopology={currentTopology}
+              onClose={() => setIsAIGeneratorOpen(false)}
+              onApplyTopology={handleImportGenerated}
+            />
           )}
         </div>
 
@@ -917,13 +928,6 @@ function DiagramContent() {
         isOpen={isMermaidImportOpen}
         onClose={() => setIsMermaidImportOpen(false)}
         onImport={handleImportMermaid}
-      />
-
-      {/* AI Generator Modal */}
-      <AIGeneratorModal
-        isOpen={isAIGeneratorOpen}
-        onClose={() => setIsAIGeneratorOpen(false)}
-        onImport={handleImportGenerated}
       />
     </div>
   );
