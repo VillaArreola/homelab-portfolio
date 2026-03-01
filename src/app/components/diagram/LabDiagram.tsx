@@ -29,15 +29,17 @@ import AdminLoginModal from "../modals/AdminLoginModal";
 import NodeEditorModal from "../modals/NodeEditorModal";
 import ConfirmDialog from "../modals/ConfirmDialog";
 import MermaidImportModal from "../modals/MermaidImportModal";
+import AdminDashboardModal from "../modals/AdminDashboardModal";
 import ViewModeToggle, { MainView } from "../views/ViewModeToggle";
 import HardwareTable from "../views/HardwareTable";
 import ServicesTable from "../views/ServicesTable";
 import infraData from "@/data/infrastructure.json";
+import connectionsData from "@/data/connections.json";
 import viewsData from "@/data/views.json";
 import { buildInfraTree } from "@/lib/buildTree";
 import { treeToReactFlow } from "@/lib/treeToFlow";
 import { toMermaidDiagram } from "@/lib/mermaidExport";
-import { InfraItem } from "@/lib/infraTypes";
+import { InfraItem, CrossConnection } from "@/lib/infraTypes";
 import {
   saveLayout,
   loadLastLayout,
@@ -91,6 +93,8 @@ function DiagramContent() {
   const [editorMode, setEditorMode] = useState<"add" | "edit">("add");
   const [nodeToEdit, setNodeToEdit] = useState<InfraItem | undefined>(undefined);
   const [currentTopology, setCurrentTopology] = useState<InfraItem[]>([...infraData]);
+  const [currentConnections, setCurrentConnections] = useState<CrossConnection[]>([...connectionsData] as CrossConnection[]);
+  const [isAdminDashboardOpen, setIsAdminDashboardOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const userEdgesRef = useRef<Edge[]>([]);
 
@@ -102,7 +106,7 @@ function DiagramContent() {
 
   // Generar nodos y aristas iniciales desde el JSON
   const tree = buildInfraTree(currentTopology);
-  const initialFlowData = treeToReactFlow(tree);
+  const initialFlowData = treeToReactFlow(tree, currentConnections);
 
   // Mantener todos los nodos y edges originales
   const [allNodes, setAllNodes] = useState<Node[]>(initialFlowData.nodes);
@@ -114,7 +118,7 @@ function DiagramContent() {
   // Sincronizar nodos y edges cuando cambia la topología
   useEffect(() => {
     const tree = buildInfraTree(currentTopology);
-    const flowData = treeToReactFlow(tree);
+    const flowData = treeToReactFlow(tree, currentConnections);
     
     // Preservar posiciones de nodos existentes
     const updatedNodes = flowData.nodes.map(newNode => {
@@ -131,7 +135,7 @@ function DiagramContent() {
     setAllEdges(combinedEdges);
     setNodes(updatedNodes);
     setEdges(combinedEdges);
-  }, [currentTopology, setNodes, setEdges]);
+  }, [currentTopology, currentConnections, setNodes, setEdges]);
 
   // Cargar layout guardado al montar
   useEffect(() => {
@@ -236,8 +240,9 @@ function DiagramContent() {
     setSavedLayouts([]);
     // Resetear topología a la original
     setCurrentTopology([...infraData]);
+    setCurrentConnections([...connectionsData] as CrossConnection[]);
     const tree = buildInfraTree(infraData);
-    const flowData = treeToReactFlow(tree);
+    const flowData = treeToReactFlow(tree, connectionsData as CrossConnection[]);
     setAllNodes(flowData.nodes);
     setAllEdges(flowData.edges);
     setNodes(flowData.nodes);
@@ -281,8 +286,9 @@ function DiagramContent() {
         userEdgesRef.current = [];
         setIsCustomMode(false);
         setCurrentTopology([...infraData]);
+        setCurrentConnections([...connectionsData] as CrossConnection[]);
         const tree = buildInfraTree(infraData);
-        const flowData = treeToReactFlow(tree);
+        const flowData = treeToReactFlow(tree, connectionsData as CrossConnection[]);
         setAllNodes(flowData.nodes);
         setAllEdges(flowData.edges);
         setNodes(flowData.nodes);
@@ -312,8 +318,9 @@ function DiagramContent() {
         setSavedLayouts([]);
         // Resetear topología a la original
         setCurrentTopology([...infraData]);
+        setCurrentConnections([...connectionsData] as CrossConnection[]);
         const tree = buildInfraTree(infraData);
-        const flowData = treeToReactFlow(tree);
+        const flowData = treeToReactFlow(tree, connectionsData as CrossConnection[]);
         setAllNodes(flowData.nodes);
         setAllEdges(flowData.edges);
         setNodes(flowData.nodes);
@@ -650,7 +657,30 @@ function DiagramContent() {
     const password = process.env.NEXT_PUBLIC_ADMIN_PASSWORD;
     
     try {
-      const response = await fetch("/api/save-infrastructure", {
+      // Convert user-drawn edges to CrossConnections
+      const userConnections: CrossConnection[] = userEdgesRef.current
+        .filter(edge => edge.id.startsWith('user-'))
+        .map(edge => ({
+          from: edge.source,
+          to: edge.target,
+          type: 'custom' as const,
+          label: 'Manual Connection',
+          description: 'Connection created manually in diagram',
+        }));
+
+      // Merge with existing connections (avoid duplicates)
+      const mergedConnections = [...currentConnections];
+      userConnections.forEach(userConn => {
+        const isDuplicate = mergedConnections.some(
+          conn => conn.from === userConn.from && conn.to === userConn.to
+        );
+        if (!isDuplicate) {
+          mergedConnections.push(userConn);
+        }
+      });
+
+      // Save topology
+      const topologyResponse = await fetch("/api/save-infrastructure", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -661,30 +691,72 @@ function DiagramContent() {
         }),
       });
 
-      const data = await response.json();
+      const topologyData = await topologyResponse.json();
 
-      if (response.ok) {
-        setSaveMessage(`✓ Saved ${data.nodesCount} nodes permanently`);
-        setTimeout(() => setSaveMessage(""), 3000);
+      if (!topologyResponse.ok) {
+        alert(`Error: ${topologyData.error}`);
+        return;
+      }
+
+      // Save connections (including converted user edges)
+      const connectionsResponse = await fetch("/api/save-connections", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          connections: mergedConnections,
+          password: password,
+        }),
+      });
+
+      const connectionsData = await connectionsResponse.json();
+
+      if (connectionsResponse.ok) {
+        // Update state with merged connections and clear user edges
+        setCurrentConnections(mergedConnections);
+        userEdgesRef.current = [];
+        
+        setSaveMessage(
+          `✓ Saved ${topologyData.nodesCount} nodes and ${connectionsData.connectionsCount} connections permanently`
+        );
+        setTimeout(() => setSaveMessage(""), 4000);
       } else {
-        alert(`Error: ${data.error}`);
+        alert(`Warning: Topology saved but connections failed: ${connectionsData.error}`);
       }
     } catch (error) {
-      alert("Failed to save topology");
+      alert("Failed to save");
       console.error(error);
     }
-  }, [isAdmin, currentTopology]);
+  }, [isAdmin, currentTopology, currentConnections]);
 
-  // Update the tree when topology changes, preserving user-drawn edges
-  useEffect(() => {
-    const tree = buildInfraTree(currentTopology);
-    const flowData = treeToReactFlow(tree);
-    const mergedEdges = [...flowData.edges, ...userEdgesRef.current];
-    setAllNodes(flowData.nodes);
-    setAllEdges(mergedEdges);
-    setNodes(flowData.nodes);
-    setEdges(mergedEdges);
-  }, [currentTopology, setNodes, setEdges]);
+  // Save connections permanently (admin only)
+  const handleSaveConnections = useCallback(async (connections: CrossConnection[]) => {
+    if (!isAdmin) {
+      throw new Error("Admin privileges required");
+    }
+
+    const password = process.env.NEXT_PUBLIC_ADMIN_PASSWORD;
+    
+    const response = await fetch("/api/save-connections", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        connections: connections,
+        password: password,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || "Failed to save connections");
+    }
+
+    return data;
+  }, [isAdmin]);
 
   return (
     <div className="h-full flex bg-slate-950">
@@ -743,6 +815,7 @@ function DiagramContent() {
           onImportMermaid={() => setIsMermaidImportOpen(true)}
           onGenerateWithAI={() => setIsAIGeneratorOpen(prev => !prev)}
           onSavePermanently={handleSavePermanently}
+          onAdminDashboard={() => setIsAdminDashboardOpen(true)}
         />
       </div>
 
@@ -921,6 +994,16 @@ function DiagramContent() {
         variant="warning"
         onConfirm={confirmDialog.onConfirm}
         onCancel={() => setConfirmDialog({ isOpen: false, title: "", message: "", onConfirm: () => {} })}
+      />
+
+      {/* Admin Dashboard Modal */}
+      <AdminDashboardModal
+        isOpen={isAdminDashboardOpen}
+        onClose={() => setIsAdminDashboardOpen(false)}
+        currentTopology={currentTopology}
+        currentConnections={currentConnections}
+        onConnectionsChange={setCurrentConnections}
+        onSaveConnections={handleSaveConnections}
       />
 
       {/* Mermaid Import Modal */}

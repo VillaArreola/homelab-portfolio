@@ -32,3 +32,20 @@ export type InfraItem = {
 export type InfraTreeNode = InfraItem & {
   children: InfraTreeNode[];
 };
+
+// Connection types for cross-connections between nodes
+export type ConnectionType = "ssh" | "http" | "https" | "vpn" | "storage" | "database" | "custom";
+
+export interface CrossConnection {
+  from: string;                 // Source node ID
+  to: string;                   // Target node ID
+  type: ConnectionType;         // Connection protocol/purpose
+  label?: string;               // Display label (optional)
+  description?: string;         // Documentation (optional)
+  bidirectional?: boolean;      // Default: false
+  metadata?: {
+    port?: number;
+    protocol?: string;
+    bandwidth?: string;
+  };
+}

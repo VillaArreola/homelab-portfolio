@@ -99,6 +99,7 @@ interface ToolbarProps {
   onNewCanvas: () => void;
   onResetDiagram: () => void;
   isCustomMode: boolean;
+  onAdminDashboard?: () => void;
 }
 
 export default function Toolbar({
@@ -125,6 +126,7 @@ export default function Toolbar({
   onNewCanvas,
   onResetDiagram,
   isCustomMode,
+  onAdminDashboard,
   onLoadLayout,
   onDeleteLayout,
   onZoomIn,
@@ -522,6 +524,21 @@ export default function Toolbar({
               </div>
             )}
           </div>
+
+          {/* Admin Dashboard (Admin only) */}
+          {isAdmin && onAdminDashboard && (
+            <button
+              onClick={onAdminDashboard}
+              className="
+                flex items-center gap-2 md:gap-3 p-2 rounded-lg w-full transition-all
+                bg-purple-500/10 border border-purple-500/20
+                text-purple-400 hover:bg-purple-500/20 hover:border-purple-500/30
+              "
+            >
+              <Settings size={18} />
+              <span className="text-xs md:text-sm font-medium">Admin Dashboard</span>
+            </button>
+          )}
 
           {/* Save Permanently (Admin only) */}
           {isAdmin ? (

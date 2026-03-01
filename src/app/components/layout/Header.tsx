@@ -50,7 +50,7 @@ export default function Header() {
           <span>CTF</span>
         </a>
         <a
-          href="https://cheat.villaarreola.com"
+          href="https://cheats.villaarreola.com"
           target="_blank"
           rel="noopener noreferrer"
           className="

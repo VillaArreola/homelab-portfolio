@@ -1,4 +1,4 @@
-import { InfraItem } from "./infraTypes";
+import { InfraItem, CrossConnection, ConnectionType } from "./infraTypes";
 
 /**
  * Valid node types from node templates in Toolbar
@@ -169,3 +169,120 @@ export function validateTopology(items: any[]): {
     cycles: cycles.length > 0 ? cycles : undefined,
   };
 }
+
+/**
+ * Valid connection types
+ */
+export const VALID_CONNECTION_TYPES: ConnectionType[] = [
+  "ssh",
+  "http",
+  "https",
+  "vpn",
+  "storage",
+  "database",
+  "custom",
+];
+
+/**
+ * Validates a single CrossConnection object
+ */
+export function validateConnection(
+  connection: any,
+  topology: InfraItem[]
+): { valid: boolean; errors: string[] } {
+  const errors: string[] = [];
+  const nodeIds = new Set(topology.map((item) => item.id));
+
+  // Required fields
+  if (!connection.from || typeof connection.from !== "string" || !connection.from.trim()) {
+    errors.push(`Missing or invalid 'from' field`);
+  } else if (!nodeIds.has(connection.from)) {
+    errors.push(`Connection references non-existent source node '${connection.from}'`);
+  }
+
+  if (!connection.to || typeof connection.to !== "string" || !connection.to.trim()) {
+    errors.push(`Missing or invalid 'to' field`);
+  } else if (!nodeIds.has(connection.to)) {
+    errors.push(`Connection references non-existent target node '${connection.to}'`);
+  }
+
+  if (!connection.type || typeof connection.type !== "string" || !connection.type.trim()) {
+    errors.push(`Missing or invalid 'type' field`);
+  } else if (!VALID_CONNECTION_TYPES.includes(connection.type as ConnectionType)) {
+    errors.push(
+      `Invalid connection type '${connection.type}'. Must be one of: ${VALID_CONNECTION_TYPES.join(", ")}`
+    );
+  }
+
+  // Check for self-loops
+  if (connection.from === connection.to) {
+    errors.push(`Self-loop detected: connection from '${connection.from}' to itself`);
+  }
+
+  // Optional field type validation
+  if (connection.label !== undefined && typeof connection.label !== "string") {
+    errors.push(`'label' must be a string`);
+  }
+
+  if (connection.description !== undefined && typeof connection.description !== "string") {
+    errors.push(`'description' must be a string`);
+  }
+
+  if (connection.bidirectional !== undefined && typeof connection.bidirectional !== "boolean") {
+    errors.push(`'bidirectional' must be a boolean`);
+  }
+
+  return {
+    valid: errors.length === 0,
+    errors,
+  };
+}
+
+/**
+ * Validates an entire connections array
+ */
+export function validateConnections(
+  connections: any[],
+  topology: InfraItem[]
+): { valid: boolean; errors: string[]; duplicates?: string[] } {
+  const errors: string[] = [];
+
+  // Check if array
+  if (!Array.isArray(connections)) {
+    return {
+      valid: false,
+      errors: ["Connections must be an array"],
+    };
+  }
+
+  // Empty array is valid
+  if (connections.length === 0) {
+    return { valid: true, errors: [] };
+  }
+
+  // Validate each connection
+  connections.forEach((connection, index) => {
+    const result = validateConnection(connection, topology);
+    if (!result.valid) {
+      errors.push(`Connection ${index}: ${result.errors.join(", ")}`);
+    }
+  });
+
+  // Check for duplicate connections (same from-to pair)
+  const connectionKeys = connections
+    .filter((c) => c.from && c.to)
+    .map((c) => `${c.from}->${c.to}`);
+  const duplicates = connectionKeys.filter((key, index) => connectionKeys.indexOf(key) !== index);
+
+  if (duplicates.length > 0) {
+    const uniqueDuplicates = [...new Set(duplicates)];
+    errors.push(`Duplicate connections found: ${uniqueDuplicates.join(", ")}`);
+  }
+
+  return {
+    valid: errors.length === 0,
+    errors,
+    duplicates: duplicates.length > 0 ? [...new Set(duplicates)] : undefined,
+  };
+}
+

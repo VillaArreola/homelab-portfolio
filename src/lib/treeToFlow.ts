@@ -1,6 +1,6 @@
-import { InfraTreeNode } from "@/lib/infraTypes";
+import { InfraTreeNode, CrossConnection } from "@/lib/infraTypes";
 import statusMap from "@/data/status.json";
-import connections from "@/data/connections.json";
+import connectionsData from "@/data/connections.json";
 import { getRegistryIcon } from "@/lib/iconRegistry";
 
 import {
@@ -120,7 +120,10 @@ function getStatus(id: string): "up" | "down" | "unknown" | "off" {
 // ================================
 // LAYOUT AUTOMÁTICO CENTRADO
 // ================================
-export function treeToReactFlow(roots: InfraTreeNode[]) {
+export function treeToReactFlow(
+  roots: InfraTreeNode[],
+  connections: CrossConnection[] = connectionsData as CrossConnection[]
+) {
   const nodes: any[] = [];
   const edges: any[] = [];
 
