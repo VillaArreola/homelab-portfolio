@@ -181,6 +181,97 @@ export function detectJailbreakAttempt(query: string): { isJailbreak: boolean; r
 }
 
 /**
+ * Detects off-topic prompts for the topology generator
+ * Generator should ONLY accept infrastructure-related requests
+ */
+export function detectOffTopicGeneration(prompt: string): { isOffTopic: boolean; reason?: string } {
+  const lowerPrompt = prompt.toLowerCase();
+  
+  // Infrastructure keywords - if present, allow the prompt
+  const infraKeywords = [
+    "homelab", "proxmox", "server", "vm", "container", "docker", "network",
+    "vlan", "router", "switch", "firewall", "hypervisor", "storage", "nas",
+    "kubernetes", "k8s", "node", "host", "infrastructure", "topology",
+    "cluster", "rack", "datacenter", "service", "application", "database",
+    "nginx", "apache", "linux", "windows", "ubuntu", "debian", "pfsense",
+    "unifi", "tp-link", "cisco", "mikrotik", "opnsense", "truenas"
+  ];
+  
+  const hasInfraKeyword = infraKeywords.some(keyword => lowerPrompt.includes(keyword));
+  
+  // Math and calculation patterns
+  const mathPatterns = [
+    /^\s*\d+\s*[\+\-\*\/\^]\s*\d+/,  // Starts with "5+5", "10-3", etc.
+    /cuanto\s+es\s+\d+/i,            // "cuanto es 5+5"
+    /what\s+is\s+\d+/i,              // "what is 5+5"
+    /calculate|solve|compute/i,       // calculation words
+  ];
+  
+  for (const pattern of mathPatterns) {
+    if (pattern.test(prompt) && !hasInfraKeyword) {
+      return {
+        isOffTopic: true,
+        reason: "Math calculations are not infrastructure requests"
+      };
+    }
+  }
+  
+  // Creative writing requests
+  const creativePatterns = [
+    /(write|create|generate|compose)\s+(a|an)?\s*(poem|story|song|essay|novel|article)/i,
+    /tell\s+me\s+(a|an)?\s*(joke|story)/i,
+  ];
+  
+  for (const pattern of creativePatterns) {
+    if (pattern.test(prompt) && !hasInfraKeyword) {
+      return {
+        isOffTopic: true,
+        reason: "Creative writing requests are not infrastructure topology"
+      };
+    }
+  }
+  
+  // General knowledge questions
+  const generalKnowledgePatterns = [
+    /what\s+is\s+(the\s+)?(capital|president|population)/i,
+    /who\s+(is|was|are|were)/i,
+    /when\s+(did|was|is)/i,
+    /where\s+(is|are|was|were)/i,
+  ];
+  
+  for (const pattern of generalKnowledgePatterns) {
+    if (pattern.test(prompt) && !hasInfraKeyword) {
+      return {
+        isOffTopic: true,
+        reason: "General knowledge questions are not infrastructure requests"
+      };
+    }
+  }
+  
+  // Off-topic topics
+  const offTopicKeywords = [
+    "recipe", "cooking", "food", "restaurant",
+    "movie", "film", "music", "book", "novel",
+    "sports", "football", "basketball", "soccer",
+    "weather", "climate", "forecast",
+    "celebrity", "actor", "actress", "singer",
+    "politics", "election", "president", "government",
+    "religion", "bible", "quran", "church",
+  ];
+  
+  const hasOffTopicKeyword = offTopicKeywords.some(keyword => lowerPrompt.includes(keyword));
+  
+  if (hasOffTopicKeyword && !hasInfraKeyword) {
+    return {
+      isOffTopic: true,
+      reason: "Topic is not related to infrastructure"
+    };
+  }
+  
+  return { isOffTopic: false };
+}
+
+/**
  * Construye el system prompt optimizado con guardrails reforzados
  */
 export function buildSystemPrompt(context: string): string {

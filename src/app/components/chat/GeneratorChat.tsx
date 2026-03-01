@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Send, X, Sparkles, Loader2, AlertCircle, ChevronDown, ChevronUp, CheckCircle } from "lucide-react";
 import { InfraItem } from "@/lib/infraTypes";
+import { detectOffTopicGeneration } from "@/lib/chatHelpers";
 
 interface GeneratorMessage {
   role: "user" | "assistant";
@@ -55,6 +56,22 @@ export default function GeneratorChat({ currentTopology, onClose, onApplyTopolog
     setIsGenerating(true);
     setError(null);
 
+    // Guardrail: Check for off-topic prompts
+    const offTopicCheck = detectOffTopicGeneration(currentInput);
+    if (offTopicCheck.isOffTopic) {
+      const errorMsg = "🚫 I can only generate infrastructure topologies (servers, VMs, networks, etc.). Please ask about homelab infrastructure.";
+      setError(errorMsg);
+      
+      const errorMessage: GeneratorMessage = {
+        role: "assistant",
+        content: errorMsg,
+        timestamp: getTimestamp(),
+      };
+      setMessages((prev) => [...prev, errorMessage]);
+      setIsGenerating(false);
+      return;
+    }
+
     try {
       // Build conversation history for context
       const conversationHistory = messages.map((msg) => ({
@@ -97,12 +114,29 @@ export default function GeneratorChat({ currentTopology, onClose, onApplyTopolog
       setMessages((prev) => [...prev, assistantMessage]);
       setPendingTopology(items);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to generate topology");
+      const errorMsg = err instanceof Error ? err.message : "Failed to generate topology";
+      
+      // Detectar tipos específicos de error y dar mensajes claros
+      let userFriendlyError: string;
+      
+      if (errorMsg.includes("timeout") || errorMsg.includes("30 seconds") || errorMsg.includes("60 seconds")) {
+        userFriendlyError = "⏱️ Generation timed out. Try a simpler description or check API status.";
+      } else if (errorMsg.includes("Too Many Requests") || errorMsg.includes("429")) {
+        userFriendlyError = "🚦 Rate limit reached. Please wait a moment and try again.";
+      } else if (errorMsg.includes("Network") || errorMsg.includes("Failed to fetch")) {
+        userFriendlyError = "🌐 Network error. Check your connection and try again.";
+      } else if (errorMsg.includes("401") || errorMsg.includes("403")) {
+        userFriendlyError = "🔑 Authentication error. Check API credentials.";
+      } else {
+        userFriendlyError = `❌ ${errorMsg}`;
+      }
+      
+      setError(userFriendlyError);
       console.error("Generation error:", err);
       
       const errorMessage: GeneratorMessage = {
         role: "assistant",
-        content: `❌ Generation failed: ${err instanceof Error ? err.message : "Unknown error"}`,
+        content: userFriendlyError,
         timestamp: getTimestamp(),
       };
       setMessages((prev) => [...prev, errorMessage]);
@@ -113,6 +147,10 @@ export default function GeneratorChat({ currentTopology, onClose, onApplyTopolog
 
   const handleApply = (items: InfraItem[]) => {
     onApplyTopology(items);
+    setPendingTopology(null);
+  };
+
+  const handleDiscard = () => {
     setPendingTopology(null);
   };
 
@@ -246,10 +284,11 @@ export default function GeneratorChat({ currentTopology, onClose, onApplyTopolog
                                 Apply to Diagram
                               </button>
                               <button
-                                className="px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-slate-400 text-[10px] font-medium hover:bg-slate-700 transition-all"
-                                title="Continue refining before applying"
+                                onClick={handleDiscard}
+                                className="px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-slate-400 text-[10px] font-medium hover:bg-red-900/30 hover:text-red-400 hover:border-red-700/50 transition-all"
+                                title="Discard this topology and continue refining"
                               >
-                                Continue
+                                Descartar
                               </button>
                             </div>
                           </div>

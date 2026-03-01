@@ -15,7 +15,7 @@ const LLM_CONFIG = {
 const RATE_LIMIT = {
   maxRequestsPerMinute: parseInt(process.env.RATE_LIMIT_RPM || "10"),
   maxPromptLength: parseInt(process.env.MAX_MESSAGE_LENGTH || "2000"),
-  requestTimeout: parseInt(process.env.REQUEST_TIMEOUT || "45000"), // 45 seconds for generation
+  requestTimeout: parseInt(process.env.LLM_GENERATION_TIMEOUT || process.env.REQUEST_TIMEOUT || "60000"), // 60 seconds for generation
 };
 
 // Simple in-memory rate limiter
