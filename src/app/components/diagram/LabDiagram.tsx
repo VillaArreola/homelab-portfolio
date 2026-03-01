@@ -27,6 +27,8 @@ import ChatWithInfra from "../chat/ChatWithInfra";
 import AdminLoginModal from "../modals/AdminLoginModal";
 import NodeEditorModal from "../modals/NodeEditorModal";
 import ConfirmDialog from "../modals/ConfirmDialog";
+import MermaidImportModal from "../modals/MermaidImportModal";
+import AIGeneratorModal from "../modals/AIGeneratorModal";
 import ViewModeToggle, { MainView } from "../views/ViewModeToggle";
 import HardwareTable from "../views/HardwareTable";
 import ServicesTable from "../views/ServicesTable";
@@ -83,6 +85,8 @@ function DiagramContent() {
   // Node Editor states
   const [isAdmin, setIsAdmin] = useState(false);
   const [isAdminLoginOpen, setIsAdminLoginOpen] = useState(false);
+  const [isMermaidImportOpen, setIsMermaidImportOpen] = useState(false);
+  const [isAIGeneratorOpen, setIsAIGeneratorOpen] = useState(false);
   const [isNodeEditorOpen, setIsNodeEditorOpen] = useState(false);
   const [editorMode, setEditorMode] = useState<"add" | "edit">("add");
   const [nodeToEdit, setNodeToEdit] = useState<InfraItem | undefined>(undefined);
@@ -380,6 +384,8 @@ function DiagramContent() {
   const onConnect = useCallback((params: Connection) => {
     const newEdge: Edge = {
       ...params,
+      source: params.source ?? "",
+      target: params.target ?? "",
       id: `user-${params.source}-${params.target}-${Date.now()}`,
       style: { stroke: "#a855f7", strokeWidth: 2 },
       animated: false,
@@ -476,6 +482,28 @@ function DiagramContent() {
     setTimeout(() => setSaveMessage(""), 2000);
   }, [currentTopology]);
 
+  // Copy JSON to clipboard
+  const handleCopyJSON = useCallback(() => {
+    const dataStr = JSON.stringify(currentTopology, null, 2);
+    navigator.clipboard.writeText(dataStr).then(() => {
+      setSaveMessage("✓ JSON copied to clipboard");
+      setTimeout(() => setSaveMessage(""), 2000);
+    }).catch(() => {
+      alert("Failed to copy to clipboard");
+    });
+  }, [currentTopology]);
+
+  // Copy Mermaid to clipboard
+  const handleCopyMermaid = useCallback(() => {
+    const mermaidCode = toMermaidDiagram(currentTopology);
+    navigator.clipboard.writeText(mermaidCode).then(() => {
+      setSaveMessage("✓ Mermaid copied to clipboard");
+      setTimeout(() => setSaveMessage(""), 2000);
+    }).catch(() => {
+      alert("Failed to copy to clipboard");
+    });
+  }, [currentTopology]);
+
   // Export as PNG image
   const handleExportPNG = useCallback(() => {
     const nodesBounds = getNodesBounds(nodes);
@@ -548,6 +576,40 @@ function DiagramContent() {
   // Import topology from JSON
   const handleImportTopology = useCallback(() => {
     fileInputRef.current?.click();
+  }, []);
+
+  // Paste JSON from clipboard
+  const handlePasteJSON = useCallback(async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      const json = JSON.parse(text);
+      if (Array.isArray(json)) {
+        setCurrentTopology(json);
+        setSaveMessage("✓ Topology pasted from clipboard");
+        setTimeout(() => setSaveMessage(""), 2000);
+      } else {
+        alert("Invalid JSON format: must be an array");
+      }
+    } catch (error) {
+      alert("Error reading from clipboard or parsing JSON");
+    }
+  }, []);
+
+  const handleImportMermaid = useCallback((items: InfraItem[]) => {
+    userEdgesRef.current = [];
+    setIsCustomMode(true);
+    setCurrentTopology(items);
+    setActiveView("full");
+    setSaveMessage(`✓ ${items.length} nodos importados desde Mermaid`);
+    setTimeout(() => setSaveMessage(""), 3000);
+  }, []);
+
+  // Import generated topology from AI
+  const handleImportGenerated = useCallback((items: InfraItem[]) => {
+    setCurrentTopology(prev => [...prev, ...items]);
+    setIsAIGeneratorOpen(false);
+    setSaveMessage(`✓ ${items.length} nodos generados con IA`);
+    setTimeout(() => setSaveMessage(""), 3000);
   }, []);
 
   const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -671,9 +733,14 @@ function DiagramContent() {
           isCustomMode={isCustomMode}
           onAddNode={handleAddNode}
           onExportTopology={handleExportTopology}
+          onCopyJSON={handleCopyJSON}
+          onCopyMermaid={handleCopyMermaid}
           onExportPNG={handleExportPNG}
           onExportMermaid={handleExportMermaid}
           onImportTopology={handleImportTopology}
+          onPasteJSON={handlePasteJSON}
+          onImportMermaid={() => setIsMermaidImportOpen(true)}
+          onGenerateWithAI={() => setIsAIGeneratorOpen(true)}
           onSavePermanently={handleSavePermanently}
         />
       </div>
@@ -843,6 +910,20 @@ function DiagramContent() {
         variant="warning"
         onConfirm={confirmDialog.onConfirm}
         onCancel={() => setConfirmDialog({ isOpen: false, title: "", message: "", onConfirm: () => {} })}
+      />
+
+      {/* Mermaid Import Modal */}
+      <MermaidImportModal
+        isOpen={isMermaidImportOpen}
+        onClose={() => setIsMermaidImportOpen(false)}
+        onImport={handleImportMermaid}
+      />
+
+      {/* AI Generator Modal */}
+      <AIGeneratorModal
+        isOpen={isAIGeneratorOpen}
+        onClose={() => setIsAIGeneratorOpen(false)}
+        onImport={handleImportGenerated}
       />
     </div>
   );

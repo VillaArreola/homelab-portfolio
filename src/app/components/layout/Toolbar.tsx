@@ -36,7 +36,11 @@ import {
   Network,
   Laptop,
   Wifi,
-  Grid3x3
+  Grid3x3,
+  Sparkles,
+  ChevronRight,
+  Copy,
+  Clipboard
 } from "lucide-react";
 import viewsData from "@/data/views.json";
 import { SavedLayout } from "@/lib/layoutStorage";
@@ -83,9 +87,14 @@ interface ToolbarProps {
   onAdminLogin: () => void;
   onAddNode: () => void;
   onExportTopology: () => void;
+  onCopyJSON: () => void;
+  onCopyMermaid: () => void;
   onExportPNG: () => void;
   onExportMermaid: () => void;
   onImportTopology: () => void;
+  onPasteJSON: () => void;
+  onImportMermaid: () => void;
+  onGenerateWithAI?: () => void;
   onSavePermanently: () => void;
   onNewCanvas: () => void;
   onResetDiagram: () => void;
@@ -104,9 +113,14 @@ export default function Toolbar({
   onAdminLogin,
   onAddNode,
   onExportTopology,
+  onCopyJSON,
+  onCopyMermaid,
   onExportPNG,
   onExportMermaid,
   onImportTopology,
+  onPasteJSON,
+  onImportMermaid,
+  onGenerateWithAI,
   onSavePermanently,
   onNewCanvas,
   onResetDiagram,
@@ -120,6 +134,8 @@ export default function Toolbar({
 }: ToolbarProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [paletteExpanded, setPaletteExpanded] = useState(false);
+  const [exportMenuOpen, setExportMenuOpen] = useState(false);
+  const [importMenuOpen, setImportMenuOpen] = useState(false);
 
   const views = viewsData as Record<
     string,
@@ -328,53 +344,184 @@ export default function Toolbar({
             )}
           </div>
 
-          {/* Import Topology */}
+          {/* Generate with AI */}
           <button
-            onClick={onImportTopology}
+            onClick={onGenerateWithAI}
             className="
               flex items-center gap-2 md:gap-3 p-2 rounded-lg w-full transition-all
-              text-slate-400 hover:bg-purple-500/10 hover:text-purple-400
+              bg-gradient-to-r from-purple-500/20 to-pink-500/20
+              text-purple-400 hover:from-purple-500/30 hover:to-pink-500/30
+              border border-purple-500/40 hover:border-purple-500/60
+              shadow-lg shadow-purple-500/20
             "
+            title="Generate diagram with AI"
           >
-            <Upload size={18} />
-            <span className="text-xs md:text-sm font-medium">Import JSON</span>
+            <Sparkles size={18} className="animate-pulse" />
+            <span className="text-xs md:text-sm font-medium">Generate with AI</span>
           </button>
 
-          {/* Export Topology */}
-          <button
-            onClick={onExportTopology}
-            className="
-              flex items-center gap-2 md:gap-3 p-2 rounded-lg w-full transition-all
-              text-slate-400 hover:bg-cyan-500/10 hover:text-cyan-400
-            "
-          >
-            <Download size={18} />
-            <span className="text-xs md:text-sm font-medium">Export JSON</span>
-          </button>
+          {/* Import - Unified */}
+          <div className="flex flex-col gap-1">
+            <button
+              onClick={() => setImportMenuOpen((prev) => !prev)}
+              className={
+                `flex items-center gap-2 p-2 rounded-lg transition-all w-full
+                ${importMenuOpen 
+                  ? 'bg-purple-500/20 text-purple-400 border border-purple-500/50' 
+                  : 'text-slate-400 hover:bg-purple-500/10 hover:text-purple-400 border border-slate-700 hover:border-purple-500/30'
+                }`
+              }
+              title="Import diagram"
+            >
+              <Upload size={18} />
+              <span className="text-xs md:text-sm font-medium flex-1 text-left">
+                Import
+              </span>
+              {importMenuOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+            </button>
+            
+            {importMenuOpen && (
+              <div className="flex flex-col gap-1 pl-2">
+                <button
+                  onClick={() => {
+                    onImportTopology();
+                    setImportMenuOpen(false);
+                  }}
+                  className="
+                    flex items-center gap-2 p-2 rounded-lg transition-all w-full
+                    text-slate-400 hover:bg-purple-500/10 hover:text-purple-400
+                  "
+                  title="Load JSON file"
+                >
+                  <Upload size={14} />
+                  <span className="text-xs font-medium">Load File</span>
+                </button>
+                <button
+                  onClick={() => {
+                    onPasteJSON();
+                    setImportMenuOpen(false);
+                  }}
+                  className="
+                    flex items-center gap-2 p-2 rounded-lg transition-all w-full
+                    text-slate-400 hover:bg-purple-500/10 hover:text-purple-400
+                  "
+                  title="Paste JSON from clipboard"
+                >
+                  <Clipboard size={14} />
+                  <span className="text-xs font-medium">Paste JSON</span>
+                </button>
+                <button
+                  onClick={() => { onImportMermaid(); setImportMenuOpen(false); }}
+                  className="
+                    flex items-center gap-2 p-2 rounded-lg transition-all w-full
+                    text-slate-400 hover:bg-purple-500/10 hover:text-purple-400
+                  "
+                  title="Importar desde Mermaid (.mmd)"
+                >
+                  <FileCode size={14} />
+                  <span className="text-xs font-medium">Mermaid</span>
+                </button>
+              </div>
+            )}
+          </div>
 
-          {/* Export PNG */}
-          <button
-            onClick={onExportPNG}
-            className="
-              flex items-center gap-2 md:gap-3 p-2 rounded-lg w-full transition-all
-              text-slate-400 hover:bg-pink-500/10 hover:text-pink-400
-            "
-          >
-            <Image size={18} />
-            <span className="text-xs md:text-sm font-medium">Export PNG</span>
-          </button>
-
-          {/* Export Mermaid */}
-          <button
-            onClick={onExportMermaid}
-            className="
-              flex items-center gap-2 md:gap-3 p-2 rounded-lg w-full transition-all
-              text-slate-400 hover:bg-indigo-500/10 hover:text-indigo-400
-            "
-          >
-            <FileCode size={18} />
-            <span className="text-xs md:text-sm font-medium">Export Mermaid</span>
-          </button>
+          {/* Export To - Unified */}
+          <div className="flex flex-col gap-1">
+            <button
+              onClick={() => setExportMenuOpen((prev) => !prev)}
+              className={
+                `flex items-center gap-2 p-2 rounded-lg transition-all w-full
+                ${exportMenuOpen 
+                  ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/50' 
+                  : 'text-slate-400 hover:bg-cyan-500/10 hover:text-cyan-400 border border-slate-700 hover:border-cyan-500/30'
+                }`
+              }
+              title="Export diagram"
+            >
+              <Download size={18} />
+              <span className="text-xs md:text-sm font-medium flex-1 text-left">
+                Export To
+              </span>
+              {exportMenuOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+            </button>
+            
+            {exportMenuOpen && (
+              <div className="flex flex-col gap-1 pl-2">
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => {
+                      onExportTopology();
+                      setExportMenuOpen(false);
+                    }}
+                    className="
+                      flex items-center gap-2 p-2 rounded-lg transition-all flex-1
+                      text-slate-400 hover:bg-cyan-500/10 hover:text-cyan-400
+                    "
+                    title="Download JSON"
+                  >
+                    <Download size={14} />
+                    <span className="text-xs font-medium">JSON</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      onCopyJSON();
+                      setExportMenuOpen(false);
+                    }}
+                    className="
+                      p-2 rounded-lg transition-all
+                      text-slate-400 hover:bg-cyan-500/10 hover:text-cyan-400
+                    "
+                    title="Copy JSON to clipboard"
+                  >
+                    <Copy size={14} />
+                  </button>
+                </div>
+                <button
+                  onClick={() => {
+                    onExportPNG();
+                    setExportMenuOpen(false);
+                  }}
+                  className="
+                    flex items-center gap-2 p-2 rounded-lg transition-all w-full
+                    text-slate-400 hover:bg-pink-500/10 hover:text-pink-400
+                  "
+                  title="Export as PNG image"
+                >
+                  <Image size={14} />
+                  <span className="text-xs font-medium">PNG</span>
+                </button>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => {
+                      onExportMermaid();
+                      setExportMenuOpen(false);
+                    }}
+                    className="
+                      flex items-center gap-2 p-2 rounded-lg transition-all flex-1
+                      text-slate-400 hover:bg-indigo-500/10 hover:text-indigo-400
+                    "
+                    title="Download Mermaid"
+                  >
+                    <Download size={14} />
+                    <span className="text-xs font-medium">Mermaid</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      onCopyMermaid();
+                      setExportMenuOpen(false);
+                    }}
+                    className="
+                      p-2 rounded-lg transition-all
+                      text-slate-400 hover:bg-indigo-500/10 hover:text-indigo-400
+                    "
+                    title="Copy Mermaid to clipboard"
+                  >
+                    <Copy size={14} />
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
 
           {/* Save Permanently (Admin only) */}
           {isAdmin ? (
