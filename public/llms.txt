@@ -1,0 +1,116 @@
+# Homelab Infrastructure Portfolio
+
+Interactive visualization and documentation of homelab network topology with AI-powered chat assistant.
+
+## Project Overview
+
+This Next.js 14+ application provides an interactive React Flow-based diagram for visualizing homelab infrastructure with multiple layers (physical, virtual, cloud), an AI chat assistant with context-aware infrastructure knowledge, and a live admin editor for managing topology in real-time.
+
+## Key Technologies
+
+- Next.js 14+ App Router with Server Components
+- React Flow (@xyflow/react) for topology visualization
+- TypeScript 5.0
+- Tailwind CSS with shadcn/ui components
+- OpenAI-compatible LLM integration (LiteLLM/OpenRouter)
+
+## Documentation
+
+- [CLAUDE.md](/CLAUDE.md) - Architecture, data flow, and development guidelines
+- [README.md](/README.md) - Quick start, features, and deployment instructions
+- [LLM_CONFIG.md](/LLM_CONFIG.md) - LLM integration and context optimization details
+- [EDITOR.md](/EDITOR.md) - Admin node editor documentation
+- [PRD_ADMIN_DASHBOARD.md](/PRD_ADMIN_DASHBOARD.md) - Product requirements for admin features
+
+## Architecture
+
+### Data Pipeline
+
+1. `src/data/infrastructure.json` - Flat array of nodes with parent refs
+2. `buildInfraTree()` - Converts to tree structure
+3. `treeToReactFlow()` - Generates React Flow nodes and edges
+4. `applyView()` - Filters by active view
+5. React Flow renders in DiagramContent component
+
+### Key Data Files
+
+- `src/data/infrastructure.json` - Node definitions
+- `src/data/connections.json` - Cross-connections (SSH, network links)
+- `src/data/status.json` - Node status (up/down/off/unknown)
+- `src/data/views.json` - View configurations
+
+### Main Components
+
+- `src/app/components/diagram/LabDiagram.tsx` - Core diagram component
+- `src/app/components/chat/ChatWithInfra.tsx` - AI chat interface
+- `src/app/components/admin/` - Admin editor components
+
+### API Routes
+
+- `POST /api/chat` - LLM proxy with rate limiting and context optimization
+- `POST /api/save-infrastructure` - Persists topology to disk (admin only)
+
+## Development Commands
+
+```bash
+npm run dev       # Start dev server (localhost:3000)
+npm run build     # Production build
+npm start         # Start production server
+npm run lint      # Run ESLint
+```
+
+## Environment Variables
+
+Required:
+- `LLM_API_URL` - OpenAI-compatible API endpoint
+- `LLM_API_KEY` - API authentication key
+- `LLM_MODEL` - Model name (e.g., qwen3-vl:Cloud)
+- `NEXT_PUBLIC_ADMIN_PASSWORD` - Admin mode password
+
+Optional:
+- `LLM_TEMPERATURE` - Model temperature (default: 0.7)
+- `LLM_MAX_TOKENS` - Max response tokens (default: 500)
+- `RATE_LIMIT_RPM` - Requests per minute (default: 10)
+- `MAX_MESSAGE_LENGTH` - Max chat message length (default: 2000)
+- `MAX_CONVERSATION_LENGTH` - Max conversation history (default: 20)
+- `REQUEST_TIMEOUT` - LLM request timeout ms (default: 30000)
+
+## Project Structure
+
+```
+src/
+├── app/
+│   ├── components/
+│   │   ├── diagram/      # React Flow diagram components
+│   │   ├── chat/         # AI chat interface
+│   │   ├── admin/        # Admin editor
+│   │   └── ui/           # shadcn/ui components
+│   ├── api/
+│   │   ├── chat/         # LLM proxy endpoint
+│   │   └── save-infrastructure/ # Topology persistence
+│   └── layout.tsx        # Root layout
+├── data/                 # JSON data files
+├── lib/                  # Utilities and helpers
+│   ├── buildTree.ts      # Tree construction
+│   ├── treeToFlow.ts     # React Flow conversion
+│   ├── viewFilter.ts     # View filtering
+│   ├── chatHelpers.ts    # Context optimization
+│   └── layoutStorage.ts  # Layout persistence
+└── types/
+    └── infraTypes.ts     # TypeScript definitions
+```
+
+## Features
+
+- Interactive topology diagram with drag, zoom, pan
+- Multiple view modes (Full Lab, Physical, Virtual, Cloud, Services)
+- AI chat with context-aware infrastructure knowledge
+- Admin mode for live editing nodes and connections
+- Layout persistence via localStorage
+- Export as JSON, PNG, or Mermaid diagram
+- Rate limiting and jailbreak protection
+- Token-optimized context selection for LLM
+
+## License
+
+MIT
