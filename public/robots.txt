@@ -1,5 +1,7 @@
 User-agent: *
 Allow: /
+Disallow: /_next/
+Disallow: /api/
 Sitemap: https://lab.villaarreola.com/sitemap.xml
 
 # LLM-specific
@@ -8,4 +10,6 @@ User-agent: claude-web
 User-agent: GPTBot
 User-agent: ChatGPT-User
 User-agent: cohere-ai
+User-agent: CCBot
 Allow: /llms.txt
+# Opcionalmente puedes denegarles el resto si solo quieres que lean el .txt
