@@ -3,12 +3,5 @@ Allow: /
 Disallow: /api/
 Sitemap: https://lab.villaarreola.com/sitemap.xml
 
-# LLM-specific
-User-agent: anthropic-ai
-User-agent: claude-web
-User-agent: GPTBot
-User-agent: ChatGPT-User
-User-agent: cohere-ai
-User-agent: CCBot
 Allow: /llms.txt
 
