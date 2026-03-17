@@ -4,7 +4,11 @@
     "name": "Main Laptop",
     "type": "host",
     "layer": "physical",
-    "purpose": "Primary workstation and lab host"
+    "purpose": "Primary workstation and lab host",
+    "network": "10.0.0.0/24",
+    "configuration": "# create a shared network from the wireless network to ethernet adapter for homelab access \n# Windows 10 steps:\n1. Open 'Network Connections'\n2. Right-click on Wi-Fi adapter → Properties → Sharing tab\n3. Check 'Allow other network users to connect through this computer's Internet connection'\n4. Select Ethernet adapter from dropdown\n5. Save and restart network adapters\n\n# Set an static IP for the Ethernet adapter (e.g., \n10.0.0.1) to ensure consistent access to homelab devices\n\n# Install necessary tools:\n- SSH client (e.g., PuTTY, OpenSSH)\n- VPN client (if needed for remote access)\n- Web browsers for management interfaces",
+    "notes": "# **Important**: Ensure firewall allows SSH and management traffic to homelab\n\n**Maintenance**: some times windows lose connectivity, this is usually resolved by restarting the network adapters"
+
   },
   {
     "id": "vmware",
